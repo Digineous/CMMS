@@ -1,0 +1,79 @@
+#SvgjsLine1613 {
+  stroke-width: 2;
+}
+/* .css-95g4uk{
+    width: 23% !important;
+} */
+
+
+@media screen and (max-width: 768px) {
+  .css-95g4uk {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  .css-dmufe2-MuiGrid-root{
+    flex-direction: column !important;
+}
+}
+
+
+@media screen and (min-width: 850px) and (max-width: 1300px) {
+ .radialChartOuter{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /* justify-content: center; */
+ }
+ .css-yp45mw-MuiGauge-container{
+  width: 200px !important;
+ }
+ .css-1pp5nhl-MuiGauge-container {
+  width: 200px !important
+ }
+ .css-ejlhd8-MuiGauge-container{
+  width: 200px !important
+
+ }
+ .css-zx89n7-MuiGauge-container {
+  width: 200px !important
+
+ }
+ .css-1cubbgr{
+  padding: 2px !important;
+  height: 5rem;
+ }
+ .css-1a2cb24{
+  margin-left: 0px !important;
+ }
+ .css-1o7apob-MuiGrid-root{
+  padding-left: 1px !important;
+ }
+ .css-zow5z4-MuiGrid-root>.MuiGrid-item{
+  padding-left: 15px !important;
+ }
+ /* .css-zow5z4-MuiGrid-root>.MuiGrid-item{
+  padding-top: 37px !important;
+ } */
+ .css-3o42dk {
+  padding: 55px 14px !important;
+ }
+ .css-1u6vyp7{
+  width: 225px  !important;
+ }
+ .css-xkld3b {
+  width: 225px  !important;
+
+ }
+ .css-adx8wm  {
+  width: 225px  !important;
+
+ }
+ .css-1t7ap0{
+  width: 225px  !important;
+
+ }
+ 
+ /* .css-1tlzgyk-MuiGauge-container>svg{
+  width: 90% !important;
+ } */
+}

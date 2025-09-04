@@ -1,0 +1,20 @@
+.css-10hburv-MuiTypography-root{
+    color:rgb(141, 113, 113);
+}
+ .sidebar{
+   
+    background-color: #1FAEC5;
+}
+
+.sidebar ul a{
+    background-color: white;
+    margin: 12px;
+    border-radius: 10px;
+
+}
+.sidebar ul li{
+    background-color: white;
+    margin: 12px;
+    border-radius: 10px;
+
+} 

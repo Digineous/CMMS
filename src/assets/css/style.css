@@ -1,0 +1,147 @@
+.css-1jy569b-MuiFormLabel-root-MuiInputLabel-root {
+  background-color: white;
+}
+
+.table-cell {
+  border-right: 1px solid white;
+
+  width: 200px;
+  padding: 10px 0px;
+}
+.tablecellstyle {
+  background-color: #1faec5;
+  width: 200px;
+  padding: 10px;
+}
+.css-1jy569b-MuiFormLabel-root-MuiInputLabel-root {
+  font-weight: 600 !important;
+  letter-spacing: 1px !important;
+}
+
+.snackbar-right {
+  left: auto !important;
+  right: 10px !important;
+}
+
+.css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input {
+  border: 1px solid black !important;
+  border-radius: 3px !important;
+}
+
+.css-1yk1gt9-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root {
+  border: 1px solid black !important;
+  border-radius: 3px !important;
+}
+
+tabindex {
+  border-radius: 5px !important;
+}
+
+.css-1jy569b-MuiFormLabel-root-MuiInputLabel-root {
+  background-color: #f1f1f1;
+}
+
+.css-1blu1sr-MuiGrid-root {
+  flex-basis: 20% !important;
+}
+
+.css-1ald77x {
+  background: rgb(234 234 234)  !important;
+  font-weight: 600 !important;
+  font-size: 19px !important;
+}
+
+.operationschart {
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  width: 100%;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  margin-top: -24px;
+  width: calc(100% + 80px);
+  margin-left: -24px;
+}
+
+.css-19kzrtu {
+  padding: 0px !important;
+}
+
+
+.css-175vtcd-MuiGrid-root{
+  width: 100% !important;
+}
+
+
+.css-i0bk1x-MuiPaper-root {
+  background-color: rgba(3, 3, 62, 0.9 ) !important;
+
+}
+
+.css-p1sr87-MuiGauge-referenceArc {
+  fill: whitesmoke !important;
+}
+
+.css-1k2u9zb-MuiChartsAxis-root .MuiChartsAxis-tickLabel {
+  color:white !important
+}
+
+
+.css-svfogg-MuiPaper-root {
+  border: 2px solid white !important;
+  padding: 4px !important;
+}
+
+.css-b9rdri-MuiGauge-referenceArc {
+  fill: 	#7ac3db !important;
+}
+.css-c1c6ll{
+  background-color: rgba(3, 3, 62, 0.9 ) !important;
+}
+.css-9j2lqz{
+  fill:white !important;
+}
+.css-1k2u9zb-MuiChartsAxis-root .MuiChartsAxis-tickLabel {
+  fill:white !important;
+}
+
+.css-1k2u9zb-MuiChartsAxis-root .MuiChartsAxis-line {
+  stroke: white !important;
+}
+
+.css-1k2u9zb-MuiChartsAxis-root .MuiChartsAxis-tick{
+  stroke:white !important;
+}
+
+
+.css-34hspi .MuiChartsAxis-line{
+  stroke: white !important;
+}
+
+.css-34hspi .MuiChartsAxis-tick {
+  stroke: white !important;
+}
+
+.css-34hspi .MuiChartsAxis-tickLabel{
+  fill: white !important;
+}
+
+.css-1knjxvk{
+  border: 2px solid white !important;
+  padding: 4px  !important;
+}
+
+.css-3zx7e6{
+  flex-basis: 0% !important;
+}
+
+.css-3nargb > .MuiGrid-item{
+  padding-top:'9px';
+}

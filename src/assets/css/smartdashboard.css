@@ -1,0 +1,24 @@
+/* TabsComponent.css */
+
+.tabs-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .tab-panel {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .box {
+    width: calc(25% - 10px);
+    margin: 5px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #ccc;
+    background-color: #fafafa;
+    box-sizing: border-box;
+  }
+  

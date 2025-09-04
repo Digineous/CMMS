@@ -1,0 +1,10 @@
+@media screen and (min-width: 850px) and (max-width: 1300px){
+    .css-15x5qbl{
+        width: 310px !important;
+        height: 170px !important;
+    }
+}
+
+.css-3nargb > .MuiGrid-item{
+    padding-top:'9px';
+  }

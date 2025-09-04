@@ -1,0 +1,145 @@
+
+.css-i0bk1x-MuiPaper-root {
+    background-color: rgba(3, 3, 62, 0.9 ) !important;
+
+}
+
+.css-p1sr87-MuiGauge-referenceArc {
+    fill: whitesmoke !important;
+}
+
+.custom-bar-chart text {
+    fill: white !important; 
+  }
+
+.css-1k2u9zb-MuiChartsAxis-root .MuiChartsAxis-tickLabel {
+    color:white !important
+}
+
+
+.css-svfogg-MuiPaper-root {
+    border: 2px solid white !important;
+    padding: 4px !important;
+}
+
+.css-b9rdri-MuiGauge-referenceArc {
+    fill: 	#7ac3db !important;
+}
+.css-c1c6ll{
+    background-color: rgba(3, 3, 62, 0.9 ) !important;
+}
+.css-9j2lqz{
+    fill:white !important;
+}
+.css-1k2u9zb-MuiChartsAxis-root .MuiChartsAxis-tickLabel {
+    fill:white !important;
+}
+
+.css-1k2u9zb-MuiChartsAxis-root .MuiChartsAxis-line {
+    stroke: white !important;
+}
+
+.css-1k2u9zb-MuiChartsAxis-root .MuiChartsAxis-tick{
+    stroke:white !important;
+}
+
+
+.css-34hspi .MuiChartsAxis-line{
+    stroke: white !important;
+}
+
+.css-34hspi .MuiChartsAxis-tick {
+    stroke: white !important;
+}
+
+.css-34hspi .MuiChartsAxis-tickLabel{
+    fill: white !important;
+}
+.css-1s1hjbx-MuiGrid-root>.MuiGrid-item{
+    /* padding-left: 10px !important; */
+}
+
+@media screen and (min-width: 850px) and (max-width: 1300px) {
+    .css-1ganbka-MuiGauge-container{
+        width: 135px !important;
+    }
+    .css-1vljm5v {
+        box-sizing: border-box;
+        flex-flow: wrap;
+        margin-top: -72px;
+        width: 100% !important;
+         margin-left: 0px !important; 
+        display: flex;
+    }
+    .css-1tawr6l{
+        width: 135px !important;
+    }
+    .css-1s1hjbx-MuiGrid-root>.MuiGrid-item{
+        padding-left: 4px !important;
+    }
+    .css-1s1hjbx-MuiGrid-root {
+        width: 100%  !important;
+        margin-left: 0px !important;
+    }
+
+    .css-1vljm5v > .MuiGrid-item {
+        padding-left: 4px !important;
+    }
+    .css-1vljm5v{
+        margin-left: 0px;
+        width: 100%;
+    }
+    .mainOperations{
+        padding:10px 30px 10px 10px;
+    }
+    .airQualityBox{
+        width: 250px !important;
+        /* margin-left: 30px; */
+        /* background-color: red; */
+    }
+
+    .dieselGensetBox{
+        width: 345px !important;
+        /* margin-left: 30px; */
+        /* background-color: red; */
+    }
+    .AQButton{
+        /* margin-left: 30px; */
+
+    }
+
+}
+
+@media screen and (min-width: 1300px) and (max-width: 1600px){
+    .dieselGensetBox{
+        width: 535px !important;
+        /* margin-left: 30px; */
+        /* background-color: red; */
+    }
+    .AQButton{
+        /* margin-left: 85px; */
+
+    }
+    .gensetEnergyLabel{
+        margin-right: 40px !important;
+    }
+    .engeryCurrentLabel{
+        margin-right: 20px !important;
+
+    }
+    .EMDSAQ{
+        box-sizing: border-box;
+       
+
+        flex-wrap: wrap;
+        width: 100% !important;
+        -webkit-flex-direction: row;
+        -ms-flex-direction: row;
+        flex-direction: row;
+        margin-top: -72px;
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+    }
+}

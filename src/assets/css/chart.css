@@ -1,0 +1,18 @@
+.css-1c79fcn {
+    border-radius: 5px !important;
+    padding: 2px !important;
+    background: rgb(99, 191, 222) !important;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+    -webkit-align-items: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 8px;
+}
