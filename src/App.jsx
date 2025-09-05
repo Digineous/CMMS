@@ -82,6 +82,7 @@ function AppContent() {
       {!isLoginPage && (
         <>
           <NavBar />
+
         </>
       )}
       <MyRoutes />

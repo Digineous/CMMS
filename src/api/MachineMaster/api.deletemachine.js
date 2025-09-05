@@ -1,0 +1,16 @@
+import axios from "axios";
+import { baseUrl } from "../baseUrl";
+
+export const apiDeleteMachine = async (mid) => {
+    const url = baseUrl + `/machine/removeMachine/${mid}`;
+    try {
+      const token=localStorage.getItem("token")
+      const data = await axios.delete(url, {headers:{
+          Authorization:`Bearer ${token}`
+      }});
+      return data;
+    } catch (error) {
+      console.error("Error during delete plant:", error);
+      throw error;
+    }
+  };
