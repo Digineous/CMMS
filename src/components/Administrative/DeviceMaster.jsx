@@ -45,6 +45,7 @@ import { apigetMachine } from "../../api/MachineMaster/apigetmachine";
 // import DeleteConfirmationModal from "./deletemodal";
 import { Skeleton } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
+import { apiAddDevice } from "../../api/DeviceMaster/api.addDevice";
 // import { useAuthCheck } from "../utils/Auth";
 // import { apiViewMultipleParts } from "../api/api.viewmultipleparts";
 // import { apiGetPartsName } from "../api/api.getPartsName";
@@ -129,6 +130,7 @@ const DeviceMaster = () => {
     const [tableData, setTableData] = useState([]);
     const [reasonToDelete, setReasonToDelete] = useState(null);
     const [formData, setFormData] = useState({
+        deviceId: "123",
         plantNo: null,
         lineNo: null,
         machineNo: null,
@@ -260,8 +262,37 @@ const DeviceMaster = () => {
     // useEffect(() => {
     //     fetchAllPartsNames();
     // }, [partData]);
-    const handleAddSubmit = async () => {
-        //console.log(formData)
+    const handleAddSubmit = async (event) => {
+        event.preventDefault();
+        console.log(formData);
+
+        // try {
+        //     //call backend add Device api
+        //     const response = await apiAddDevice(formData);
+        //     //Show succes massage
+        //     handleSnackbarOpen("Device Added Succesfully!", "success");
+
+        //     //now we are refersh the table and add the new device entry 
+        //     const update = await apiGetDevice();
+        //     setTableData(update.data.data);
+        //     // Reset form
+        //     setFormData({
+        //         plantNo: null,
+        //         lineNo: null,
+        //         machineNo: null,
+        //         deviceName: "",
+        //         topic: ""
+        //     });
+
+        // } catch (error) {
+        //     console.error("Error adding device:", error);
+        //     handleSnackbarOpen("Error adding device. Please try again.", "error");
+        // }
+        //close addModule
+        setAddOpen(false);
+
+
+
     };
 
     const filteredLines = lineData.filter((line) => line.plantNo === 1);
@@ -471,45 +502,49 @@ const DeviceMaster = () => {
                 onConfirm={handleConfirmDelete}
             /> */}
             <Modal open={addOpen} onClose={handleModalClose}>
-                <div
-                    style={{
+                <Box
+                    sx={{
                         borderRadius: "10px",
                         position: "absolute",
                         top: "50%",
                         left: "50%",
                         transform: "translate(-50%, -50%)",
                         backgroundColor: "white",
-                        padding: "20px",
-                        width: isMobile ? "90%" : "500px",
+                        padding: "20px", // reduced padding
+                        width: isMobile ? "90%" : "400px", // reduced width
                     }}
                 >
-                    <button
-                        onClick={handleModalClose}
-                        style={{
-                            position: "absolute",
-                            top: "10px",
-                            right: "10px",
-                            cursor: "pointer",
-                            backgroundColor: "transparent",
-                            border: "none",
-                            fontSize: "30px",
-                        }}
-                    >
-                        &times;
-                    </button>
-                    <h2>Add New Part</h2>
-                    <hr />
-                    <br />
+                    {/* Close Button */}
+                    <Box sx={{ position: "absolute", top: 8, right: 8 }}>
+                        <button
+                            onClick={handleModalClose}
+                            style={{
+                                cursor: "pointer",
+                                backgroundColor: "transparent",
+                                border: "none",
+                                fontSize: "25px",
+                            }}
+                        >
+                            &times;
+                        </button>
+                    </Box>
 
-                    <Grid container spacing={2}>
-                        {/* Plant and Line Name */}
-                        <Grid item xs={12}>
-                            <FormControl fullWidth>
-                                <InputLabel>Plant Name</InputLabel>
+                    <Typography variant="h6" sx={{ mb: 1.5 }}>
+                        Add New Device
+                    </Typography>
+                    <hr />
+
+                    {/* Form Fields */}
+                    <Box component="form" onSubmit={handleAddSubmit} sx={{ mt: 1.5 }}>
+                        {/* Plant Name */}
+                        <Box sx={{ mb: 1.5 }}>
+                            <FormControl fullWidth size="small">
+                                <InputLabel id="planatName">Plant Name</InputLabel>
                                 <Select
                                     name="plantNo"
                                     value={formData.plantNo}
                                     onChange={handleInputChange}
+                                    label="plantName "
                                 >
                                     {plantData.map((row) => (
                                         <MenuItem key={row.plantNo} value={row.plantNo}>
@@ -518,15 +553,17 @@ const DeviceMaster = () => {
                                     ))}
                                 </Select>
                             </FormControl>
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12}>
-                            <FormControl fullWidth>
-                                <InputLabel>Line Name</InputLabel>
+                        {/* Line Name */}
+                        <Box sx={{ mb: 1.5 }}>
+                            <FormControl fullWidth size="small">
+                                <InputLabel id="lineName">Line Name</InputLabel>
                                 <Select
                                     name="lineNo"
                                     value={formData.lineNo}
                                     onChange={handleInputChange}
+                                    label="lineName"
                                 >
                                     {lineData.map((row) => (
                                         <MenuItem key={row.lineNo} value={row.lineNo}>
@@ -535,16 +572,17 @@ const DeviceMaster = () => {
                                     ))}
                                 </Select>
                             </FormControl>
-                        </Grid>
+                        </Box>
 
-                        {/* Machine Name and Part Name */}
-                        <Grid item xs={12}>
-                            <FormControl fullWidth>
-                                <InputLabel>Machine Name</InputLabel>
+                        {/* Machine Name */}
+                        <Box sx={{ mb: 1.5 }}>
+                            <FormControl fullWidth size="small">
+                                <InputLabel id="machineName">Machine Name</InputLabel>
                                 <Select
                                     name="machineNo"
                                     value={formData.machineNo}
                                     onChange={handleInputChange}
+                                    label="machineName"
                                 >
                                     {machineData.map((row) => (
                                         <MenuItem key={row.machineNo} value={row.machineNo}>
@@ -553,46 +591,47 @@ const DeviceMaster = () => {
                                     ))}
                                 </Select>
                             </FormControl>
-                        </Grid>
+                        </Box>
 
                         {/* Device Name */}
-                        <Grid item xs={12}>
-                            <FormControl fullWidth>
-                                <TextField
-                                    fullWidth
-                                    name="deviceName"
-                                    label="Device Name"
-                                    value={formData.deviceName}
-                                    onChange={handleInputChange}
-                                />
-                            </FormControl>
-                        </Grid>
-
-                        {/* Topic */}
-                        <Grid item xs={12}>
+                        <Box sx={{ mb: 1.5 }}>
                             <TextField
                                 fullWidth
+                                size="small"
+                                name="deviceName"
+                                label="Device Name"
+                                value={formData.deviceName}
+                                onChange={handleInputChange}
+                            />
+                        </Box>
+
+                        {/* Topic */}
+                        <Box sx={{ mb: 2 }}>
+                            <TextField
+                                fullWidth
+                                size="small"
                                 name="topic"
                                 label="Topic"
                                 value={formData.topic}
                                 onChange={handleInputChange}
                             />
-                        </Grid>
-                        <Grid item xs={12}>
+                        </Box>
 
-                            <Button
-                                onClick={handleAddSubmit}
-                                variant="contained"
-                                color="primary"
-                                fullWidth
-                                style={{ marginTop: "20px" }}
-                            >
-                                Add
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </div>
+                        {/* Submit Button */}
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            size="small"
+                            sx={{ py: 1 }}
+                        >
+                            Add Device
+                        </Button>
+                    </Box>
+                </Box>
             </Modal>
+
             <Modal open={editOpen} onClose={handleModalClose}>
                 <div
                     style={{
