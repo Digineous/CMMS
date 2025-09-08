@@ -264,30 +264,7 @@ const DeviceMaster = () => {
     // }, [partData]);
     const handleAddSubmit = async (event) => {
         event.preventDefault();
-        console.log(formData);
-
-        // try {
-        //     //call backend add Device api
-        //     const response = await apiAddDevice(formData);
-        //     //Show succes massage
-        //     handleSnackbarOpen("Device Added Succesfully!", "success");
-
-        //     //now we are refersh the table and add the new device entry 
-        //     const update = await apiGetDevice();
-        //     setTableData(update.data.data);
-        //     // Reset form
-        //     setFormData({
-        //         plantNo: null,
-        //         lineNo: null,
-        //         machineNo: null,
-        //         deviceName: "",
-        //         topic: ""
-        //     });
-
-        // } catch (error) {
-        //     console.error("Error adding device:", error);
-        //     handleSnackbarOpen("Error adding device. Please try again.", "error");
-        // }
+     
         //close addModule
         setAddOpen(false);
 
