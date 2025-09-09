@@ -431,16 +431,17 @@ export default function MachineMaster() {
           <div
             style={{
               borderRadius: "10px",
-
               position: "absolute",
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
               backgroundColor: "white",
-              padding: "20px",
-              minWidth: "500px",
+              padding: "20px 30px",
+              minWidth: "750px",   // wider modal
+              height: "auto",      // adjust to content
             }}
           >
+            {/* Close Button */}
             <button
               onClick={handleModalClose}
               style={{
@@ -455,103 +456,105 @@ export default function MachineMaster() {
             >
               &times;
             </button>
-            <h2>Add New Machine</h2>
-            <hr />
-            <br />
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Plant Name</InputLabel>
-                  <Select
-                    name="plantNo"
-                    value={formData.plantNo}
-                    onChange={handleInputChange}
-                  >
-                    {plantData.map((row) => (
-                      <MenuItem key={row.plantNo} value={row.plantNo}>{row.plantName}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
 
-              <Grid item xs={12} sm={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Line Name</InputLabel>
-                  <Select
-                    name="lineNo"
-                    value={formData.lineNo}
-                    onChange={handleInputChange}
-                  >
-                    {lineData.map((row) => (
-                      <MenuItem key={row.lineNo} value={row.lineNo}>{row.lineName}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+            <h2 style={{ marginBottom: "10px" }}>Add New Machine</h2>
+            <hr style={{ marginBottom: "20px" }} />
 
-              <Grid item xs={12} sm={12}>
-                <TextField fullWidth
-                  name="machineName"
-                  value={formData.machineName}
-                  onChange={handleInputChange}
-                  label="Machine Name "
-                />
-              </Grid>
+            <FormControl fullWidth style={{ marginBottom: "15px" }}>
+              <InputLabel>Plant Name</InputLabel>
+              <Select
+                name="plantNo"
+                value={formData.plantNo}
+                onChange={handleInputChange}
+              >
+                {plantData.map((row) => (
+                  <MenuItem key={row.plantNo} value={row.plantNo}>
+                    {row.plantName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-              <Grid item xs={12} sm={12}>
-                <TextField
-                  fullWidth
-                  name="displayMachineName"
-                  value={formData.displayMachineName}
-                  onChange={handleInputChange}
-                  label="Display Machine Name "
-                />
-              </Grid>
-              <Grid item xs={12} sm={12}>
-                <TextField
-                  fullWidth
-                  name="lineProductionCount"
-                  value={formData.lineProductionCount}
-                  onChange={handleInputChange}
-                  label="Line Production Count "
-                />
-              </Grid>
-              <Grid item xs={12} sm={12}>
-                <TextField
-                  fullWidth
-                  name="cycleTime"
-                  value={formData.cycleTime}
-                  onChange={handleInputChange}
-                  label="Cycle Time"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Button
-                  onClick={handleAddSubmit}
-                  variant="contained"
-                  color="primary"
-                  style={{ marginTop: "20px" }}
-                >
-                  Add
-                </Button>
-              </Grid>
-            </Grid>
+            <FormControl fullWidth style={{ marginBottom: "15px" }}>
+              <InputLabel>Line Name</InputLabel>
+              <Select
+                name="lineNo"
+                value={formData.lineNo}
+                onChange={handleInputChange}
+              >
+                {lineData.map((row) => (
+                  <MenuItem key={row.lineNo} value={row.lineNo}>
+                    {row.lineName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              fullWidth
+              name="machineName"
+              value={formData.machineName}
+              onChange={handleInputChange}
+              label="Machine Name"
+              style={{ marginBottom: "15px" }}
+            />
+
+            <TextField
+              fullWidth
+              name="displayMachineName"
+              value={formData.displayMachineName}
+              onChange={handleInputChange}
+              label="Display Machine Name"
+              style={{ marginBottom: "15px" }}
+            />
+
+            <TextField
+              fullWidth
+              name="lineProductionCount"
+              value={formData.lineProductionCount}
+              onChange={handleInputChange}
+              label="Line Production Count"
+              style={{ marginBottom: "15px" }}
+            />
+
+            <TextField
+              fullWidth
+              name="cycleTime"
+              value={formData.cycleTime}
+              onChange={handleInputChange}
+              label="Cycle Time"
+              style={{ marginBottom: "20px" }}
+            />
+
+            {/* Submit Button */}
+            <div style={{ textAlign: "center" }}>
+              <Button
+                onClick={handleAddSubmit}
+                variant="contained"
+                color="primary"
+                style={{ width: "200px" }}
+              >
+                Add
+              </Button>
+            </div>
           </div>
         </Modal>
+
         <Modal open={updateOpen} onClose={handleModalClose}>
           <div
             style={{
               borderRadius: "10px",
-
               position: "absolute",
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
               backgroundColor: "white",
-              padding: "20px",
-              minWidth: "500px",
+              padding: "20px 30px",
+              minWidth: "750px",   // wider modal to fit nicely
+              height: "auto",
             }}
           >
+            {/* Close Button */}
             <button
               onClick={handleModalClose}
               style={{
@@ -566,89 +569,90 @@ export default function MachineMaster() {
             >
               &times;
             </button>
-            <h2>Update Machine Data</h2>
-            <hr />
-            <br />
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Plant Name</InputLabel>
-                  <Select
-                    name="plantNo"
-                    value={formData.plantNo}
-                    onChange={handleInputChange}
-                  >
-                    {plantData.map((row) => (
-                      <MenuItem key={row.plantNo} value={row.plantNo}>{row.plantName}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
 
-              <Grid item xs={12} sm={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Line Name</InputLabel>
-                  <Select
-                    name="lineNo"
-                    value={formData.lineNo}
-                    onChange={handleInputChange}
-                  >
-                    {lineData.map((row) => (
-                      <MenuItem key={row.lineNo} value={row.lineNo}>{row.lineName}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+            <h2 style={{ marginBottom: "10px" }}>Update Machine Data</h2>
+            <hr style={{ marginBottom: "20px" }} />
 
-              <Grid item xs={12} sm={12}>
-                <TextField fullWidth
-                  name="machineName"
-                  value={formData.machineName}
-                  onChange={handleInputChange}
-                  label="Machine Name "
-                />
-              </Grid>
+            <FormControl fullWidth style={{ marginBottom: "15px" }}>
+              <InputLabel>Plant Name</InputLabel>
+              <Select
+                name="plantNo"
+                value={formData.plantNo}
+                onChange={handleInputChange}
+              >
+                {plantData.map((row) => (
+                  <MenuItem key={row.plantNo} value={row.plantNo}>
+                    {row.plantName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-              <Grid item xs={12} sm={12}>
-                <TextField
-                  fullWidth
-                  name="displayMachineName"
-                  value={formData.displayMachineName}
-                  onChange={handleInputChange}
-                  label="Display Machine Name "
-                />
-              </Grid>
-              <Grid item xs={12} sm={12}>
-                <TextField
-                  fullWidth
-                  name="lineProductionCount"
-                  value={formData.lineProductionCount}
-                  onChange={handleInputChange}
-                  label="Line Production Count "
-                />
-              </Grid>
-              <Grid item xs={12} sm={12}>
-                <TextField
-                  fullWidth
-                  name="cycleTime"
-                  value={formData.cycleTime}
-                  onChange={handleInputChange}
-                  label="Cycle Time"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Button
-                  onClick={handleEditSubmit}
-                  variant="contained"
-                  color="primary"
-                  style={{ marginTop: "20px" }}
-                >
-                  Update
-                </Button>
-              </Grid>
-            </Grid>
+            <FormControl fullWidth style={{ marginBottom: "15px" }}>
+              <InputLabel>Line Name</InputLabel>
+              <Select
+                name="lineNo"
+                value={formData.lineNo}
+                onChange={handleInputChange}
+              >
+                {lineData.map((row) => (
+                  <MenuItem key={row.lineNo} value={row.lineNo}>
+                    {row.lineName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              fullWidth
+              name="machineName"
+              value={formData.machineName}
+              onChange={handleInputChange}
+              label="Machine Name"
+              style={{ marginBottom: "15px" }}
+            />
+
+            <TextField
+              fullWidth
+              name="displayMachineName"
+              value={formData.displayMachineName}
+              onChange={handleInputChange}
+              label="Display Machine Name"
+              style={{ marginBottom: "15px" }}
+            />
+
+            <TextField
+              fullWidth
+              name="lineProductionCount"
+              value={formData.lineProductionCount}
+              onChange={handleInputChange}
+              label="Line Production Count"
+              style={{ marginBottom: "15px" }}
+            />
+
+            <TextField
+              fullWidth
+              name="cycleTime"
+              value={formData.cycleTime}
+              onChange={handleInputChange}
+              label="Cycle Time"
+              style={{ marginBottom: "20px" }}
+            />
+
+            {/* Submit Button */}
+            <div style={{ textAlign: "center" }}>
+              <Button
+                onClick={handleEditSubmit}
+                variant="contained"
+                color="primary"
+                style={{ width: "200px" }}
+              >
+                Update
+              </Button>
+            </div>
           </div>
         </Modal>
+
         <DeleteConfirmationModal
           open={deleteModalOpen}
           onClose={() => setDeleteModalOpen(false)}
