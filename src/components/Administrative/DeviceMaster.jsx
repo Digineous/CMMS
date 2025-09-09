@@ -52,6 +52,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { apiAddDevice } from "../../api/DeviceMaster/api.addDevice";
 import dayjs from "dayjs";
 import { apiUpdateDevice } from "../../api/DeviceMaster/api.updateDevice";
+import apiRemoveDevice from "../../api/DeviceMaster/api.removeDevice";
 // import { useAuthCheck } from "../utils/Auth";
 // import { apiViewMultipleParts } from "../api/api.viewmultipleparts";
 // import { apiGetPartsName } from "../api/api.getPartsName";
@@ -98,7 +99,7 @@ const DeviceMaster = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [loading, setLoading] = useState(false);
-
+    const [editDeviceId, setEditDeviceId] = useState(null);
     const [error, setError] = useState(null);
     const [partData, setPartData] = useState([]);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -322,10 +323,26 @@ const DeviceMaster = () => {
             [name]: value,
         }));
     };
-    const handleConfirmDelete = () => {
-        // dispatch(deletePart(reasonToDelete))
-        // setReasonToDelete(null)
+    const handleConfirmDelete = async () => {
+        if (!reasonToDelete) return;
+
+        try {
+            await apiRemoveDevice(reasonToDelete);
+
+            handleSnackbarOpen("Device deleted successfully!", "success");
+
+            // Refresh the device list after deletion
+            const updatedList = await apiGetDevice();
+            setTableData(updatedList.data.data);
+
+            // Close modal
+            setReasonToDelete(null);
+        } catch (error) {
+            console.error("Error deleting device:", error);
+            handleSnackbarOpen("Failed to delete device. Please try again.", "error");
+        }
     };
+
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
@@ -385,12 +402,19 @@ const DeviceMaster = () => {
 
         try {
 
+            console.log("Device updated:", updateDevice);
             const response = await apiUpdateDevice(updateDevice);
-            console.log("Device updated successfully:", response.data);
+            console.log("Device updated:", response.data);
             handleSnackbarOpen("Device updated successfully!", "success");
 
+            // Refresh the device list
+            const updatedList = await apiGetDevice();
+            setTableData(updatedList.data.data);
+
+
+            // Close modal
             setEditOpen(false);
-        } // Close modal
+        }
         catch (error) {
             console.error("Error updating device:", error);
             handleSnackbarOpen("Failed to update device. Please try again.", "error");
@@ -475,7 +499,7 @@ const DeviceMaster = () => {
                                 <StyledTableCell className="table-cell">Plant Name</StyledTableCell>
                                 <StyledTableCell className="table-cell">Line Name</StyledTableCell>
                                 <StyledTableCell className="table-cell">Machine Name</StyledTableCell>
-                                <StyledTableCell className="table-cell">Device No</StyledTableCell>
+                                <StyledTableCell className="table-cell">Device Id</StyledTableCell>
                                 <StyledTableCell className="table-cell">Device Name</StyledTableCell>
                                 <StyledTableCell className="table-cell">Topic</StyledTableCell>
                                 <StyledTableCell className="table-cell">Created Date</StyledTableCell>
@@ -497,7 +521,7 @@ const DeviceMaster = () => {
                                             <StyledTableCell className="table-cell">{row.plantName}</StyledTableCell>
                                             <StyledTableCell className="table-cell">{row.lineName}</StyledTableCell>
                                             <StyledTableCell className="table-cell">{row.displayMachineName}</StyledTableCell>
-                                            <StyledTableCell className="table-cell">{row.deviceNo}</StyledTableCell>
+                                            <StyledTableCell className="table-cell">{row.deviceId}</StyledTableCell>
                                             <StyledTableCell className="table-cell">{row.deviceName}</StyledTableCell>
 
                                             <StyledTableCell className="table-cell">{row.topic}
@@ -745,11 +769,17 @@ const DeviceMaster = () => {
 
                         <TextField
                             style={{ width: "17rem" }}
-                            name="deviceNo"
-                            label="Device No"
-                            value={updateDevice.deviceNo || ""}
-                            onChange={handleUpdateChange}
+                            name="deviceId"
+                            label="Device ID"
+                            value={updateDevice.deviceId || ""}
+                            onChange={(e) =>
+                                setUpdateDevice((prev) => ({
+                                    ...prev,
+                                    deviceId: e.target.value,  // ✅ correct
+                                }))
+                            }
                         />
+
                     </div>
 
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
