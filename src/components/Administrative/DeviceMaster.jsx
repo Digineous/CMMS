@@ -25,6 +25,10 @@ import {
     TablePagination,
     Tooltip,
 } from "@mui/material";
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -46,6 +50,8 @@ import { apigetMachine } from "../../api/MachineMaster/apigetmachine";
 import { Skeleton } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { apiAddDevice } from "../../api/DeviceMaster/api.addDevice";
+import dayjs from "dayjs";
+import { apiUpdateDevice } from "../../api/DeviceMaster/api.updateDevice";
 // import { useAuthCheck } from "../utils/Auth";
 // import { apiViewMultipleParts } from "../api/api.viewmultipleparts";
 // import { apiGetPartsName } from "../api/api.getPartsName";
@@ -111,6 +117,7 @@ const DeviceMaster = () => {
         partName: "",
     });
     const [viewMPAdd, setViewMPAdd] = useState(false);
+    const [updateDevice, setUpdateDevice] = useState({});
 
     const [updatedPartData, setUpdatedPartData] = useState({
         partNo: "",
@@ -130,7 +137,7 @@ const DeviceMaster = () => {
     const [tableData, setTableData] = useState([]);
     const [reasonToDelete, setReasonToDelete] = useState(null);
     const [formData, setFormData] = useState({
-        deviceId: "123",
+        deviceId: "",
         plantNo: null,
         lineNo: null,
         machineNo: null,
@@ -264,7 +271,31 @@ const DeviceMaster = () => {
     // }, [partData]);
     const handleAddSubmit = async (event) => {
         event.preventDefault();
-     
+        console.log(formData);
+
+        try {
+            //call backend add Device api
+            const response = await apiAddDevice(formData);
+            //Show succes massage
+            handleSnackbarOpen("Device Added Succesfully!", "success");
+
+            //now we are refersh the table and add the new device entry 
+            const update = await apiGetDevice();
+            setTableData(update.data.data);
+            // Reset form
+            setFormData({
+                plantNo: null,
+                deviceId: "",
+                lineNo: null,
+                machineNo: null,
+                deviceName: "",
+                topic: ""
+            });
+
+        } catch (error) {
+            console.error("Error adding device:", error);
+            handleSnackbarOpen("Error adding device. Please try again.", "error");
+        }
         //close addModule
         setAddOpen(false);
 
@@ -332,14 +363,38 @@ const DeviceMaster = () => {
         // dispatch(deletePart(id))
     }
     const handleEdit = (id) => {
-        setEditOpen(true)
-        const device = device.find((device) => device.id === id);
-        setTableData(device)
-    }
-    const handleEditSubmit = () => {
-        // dispatch(editPart({
-        //     ...tableData
-        // }))
+        setEditOpen(true);
+        console.log("You clicked Edit");
+        // find the selected device from your tableData array
+        const selectedDevice = tableData.find((row) => row.deviceNo === id);
+        setUpdateDevice(selectedDevice); // store in updateDevice
+        setUpdateDevice({ ...selectedDevice });
+        console.log("Selected device:", selectedDevice);
+
+    };
+    const handleUpdateChange = (e) => {
+        const { name, value } = e.target;
+        setUpdateDevice((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+
+    const handleEditSubmit = async () => {
+
+        try {
+
+            const response = await apiUpdateDevice(updateDevice);
+            console.log("Device updated successfully:", response.data);
+            handleSnackbarOpen("Device updated successfully!", "success");
+
+            setEditOpen(false);
+        } // Close modal
+        catch (error) {
+            console.error("Error updating device:", error);
+            handleSnackbarOpen("Failed to update device. Please try again.", "error");
+        }
     }
     const emptyRows =
         rowsPerPage - Math.min(rowsPerPage, partData.length - page * rowsPerPage);
@@ -531,6 +586,17 @@ const DeviceMaster = () => {
                                 </Select>
                             </FormControl>
                         </Box>
+                        {/* Device Id */}
+                        <Box sx={{ mb: 1.5 }}>
+                            <TextField
+                                fullWidth
+                                size="small"
+                                name="deviceId"
+                                label="Device Id"
+                                value={formData.deviceId}
+                                onChange={handleInputChange}
+                            />
+                        </Box>
 
                         {/* Line Name */}
                         <Box sx={{ mb: 1.5 }}>
@@ -610,18 +676,7 @@ const DeviceMaster = () => {
             </Modal>
 
             <Modal open={editOpen} onClose={handleModalClose}>
-                <div
-                    style={{
-                        borderRadius: "10px",
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        backgroundColor: "white",
-                        padding: "20px",
-                        minWidth: "500px",
-                    }}
-                >
+                <div style={{ borderRadius: "10px", position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "white", padding: "20px", minWidth: "500px" }}>
                     <button
                         onClick={handleModalClose}
                         style={{
@@ -636,116 +691,100 @@ const DeviceMaster = () => {
                     >
                         &times;
                     </button>
-                    <h2>Edit Part Master </h2>
+                    <h2>Edit Device</h2>
                     <hr />
                     <br />
 
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            marginBottom: "10px",
-                        }}
-                    >
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
                         <FormControl sx={{ width: "17rem", mr: "10px" }}>
                             <InputLabel>Plant Name</InputLabel>
                             <Select
-                                name="plant_name"
-                                value={tableData.plant_name}
-                                onChange={(e) => {
-                                    setSelectedLine(e.target.value);
-                                    handleInputChange(e);
-                                }}
+                                name="plantName"
+                                value={updateDevice.plantName || ""}
+                                onChange={handleUpdateChange}
                             >
-                                <MenuItem key="linamar" value="Linamar">
-                                    Linamar
-                                </MenuItem>
+                                {plantData.map((row) => (
+                                    <MenuItem key={row.plantNo} value={row.plantName}>
+                                        {row.plantName}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
+
                         <FormControl sx={{ width: "17rem" }}>
                             <InputLabel>Line Name</InputLabel>
                             <Select
-                                name="line_name"
-                                value={tableData.line_name}
-                                onChange={(e) => handleInputChange(e)}
+                                name="lineName"
+                                value={updateDevice.lineName || ""}
+                                onChange={handleUpdateChange}
                             >
-                                <MenuItem key="cylinder_head" value="CylinderHead">
-                                    CylinderHead
-                                </MenuItem>
+                                {lineData.map((row) => (
+                                    <MenuItem key={row.lineNo} value={row.lineName}>
+                                        {row.lineName}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                     </div>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            marginBottom: "10px",
-                        }}
-                    >
+
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
                         <FormControl sx={{ width: "17rem" }}>
                             <InputLabel>Machine Name</InputLabel>
                             <Select
-                                name="machine_name"
-                                onChange={(e) => handleInputChange(e)}
-                                value={tableData.machine_name}
+                                name="machineName"
+                                value={updateDevice.machineName || ""}
+                                onChange={handleUpdateChange}
                             >
-                                <MenuItem key="OP-70" value="OP-70">
-                                    OP-70
-                                </MenuItem>
+                                {machineData.map((row) => (
+                                    <MenuItem key={row.machineNo} value={row.machineName}>
+                                        {row.machineName}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
+
                         <TextField
                             style={{ width: "17rem" }}
-                            name="part_name"
-                            label="Part Name"
-                            value={tableData.part_name}
-                            onChange={(e) => handleInputChange(e)}
+                            name="deviceNo"
+                            label="Device No"
+                            value={updateDevice.deviceNo || ""}
+                            onChange={handleUpdateChange}
                         />
                     </div>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            marginBottom: "10px",
-                        }}
-                    >
+
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
                         <TextField
-                            name="cycle_time"
-                            label="Standard Cycle Time"
-                            value={tableData.cycle_time}
-                            onChange={(e) => handleInputChange(e)}
+                            name="deviceName"
+                            label="Device Name"
+                            value={updateDevice.deviceName || ""}
+                            onChange={handleUpdateChange}
                             style={{ width: "17rem" }}
                         />
                         <TextField
                             style={{ width: "17rem" }}
-                            name="part_number"
-                            label="Part Number"
-                            value={tableData.part_number}
-                            onChange={(e) => handleInputChange(e)}
+                            name="topic"
+                            label="Topic"
+                            value={updateDevice.topic || ""}
+                            onChange={handleUpdateChange}
                         />
                     </div>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            marginBottom: "10px",
-                        }}
-                    >
-                        <TextField
-                            style={{ width: "17rem" }}
-                            name="planned_production"
-                            label="Planned Production"
-                            value={tableData.planned_production}
-                            onChange={(e) => handleInputChange(e)}
-                        />
+
+                    <div style={{ marginBottom: "10px" }}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DemoContainer components={['DatePicker']}>
+                                <DatePicker
+                                    label="Created At"
+                                    value={updateDevice.createdAt ? dayjs(updateDevice.createdAt, "DD-MMM-YYYY") : null}
+                                    onChange={(newValue) =>
+                                        setUpdateDevice((prev) => ({
+                                            ...prev,
+                                            createdAt: newValue ? newValue.format("DD-MMM-YYYY") : "",
+                                        }))
+                                    }
+                                />
+                            </DemoContainer>
+                        </LocalizationProvider>
                     </div>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            marginBottom: "10px",
-                        }}
-                    ></div>
 
                     <Button
                         onClick={handleEditSubmit}
@@ -757,6 +796,7 @@ const DeviceMaster = () => {
                     </Button>
                 </div>
             </Modal>
+
             <Modal open={reasonToDelete !== null} onClose={handleModalClose}>
                 <div
                     style={{
