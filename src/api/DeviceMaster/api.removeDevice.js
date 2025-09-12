@@ -5,7 +5,7 @@ export const apiRemoveDevice = async (deviceNo) => {
   const url = baseUrl + `/device/removeDevice/${deviceNo}`;
   try {
     const token = localStorage.getItem("token");
-
+console.log(token);
     const data = await axios.put(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -16,3 +16,5 @@ export const apiRemoveDevice = async (deviceNo) => {
     throw error;
   }
 };
+export default apiRemoveDevice ;
+

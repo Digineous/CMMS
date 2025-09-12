@@ -663,6 +663,18 @@ function NavBar() {
                 <ListItem
                   Button
                   component={Link}
+                  to="/administrative/breakdown"
+                  className={
+                    location.pathname === "/administrative/breakdown"
+                      ? "activeListItem"
+                      : ""
+                  }
+                >
+                  <ListItemText primary="Breakdown" />
+                </ListItem>
+                <ListItem
+                  Button
+                  component={Link}
                   to="/administrative/devicestatus"
                   className={
                     location.pathname === "/administrative/devicestatus"
