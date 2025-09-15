@@ -1,19 +1,13 @@
 import axios from "axios";
-import { baseUrl } from "../../baseUrl";
-
-export const apiAddLineMaster = async (plantNo, lineName, segmentName) => {
-  const url = baseUrl + "/line/addline";
+import { baseUrl } from "../baseUrl";
+export const apiAssignManager = async (id, body) => {
+  //console.log("add machine data:", updatedMachineData)
+  const url = baseUrl + `/cmms/assignMaintenanceManager/${id}`;
   try {
     const token = localStorage.getItem("token");
-    //console.log(token);
-    //console.log(plantNo, lineName, segmentName);
     const data = await axios.post(
       url,
-      {
-        plantNo: plantNo,
-        lineName: lineName,
-        segment: segmentName,
-      },
+      body,
       {
         headers: {
           Authorization: `Bearer ${token}`,

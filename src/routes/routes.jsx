@@ -7,9 +7,11 @@ import LineMaster from "../components/Administrative/LineMaster";
 import MachineMaster from "../components/Administrative/MachineMaster";
 import PlantMaster from "../components/Administrative/Plantmaster";
 import BreakDown from "../components/Administrative/BreakDown";
-import InventoryMaster from "../components/Administrative/InventoryMaster";
-
-
+import ComplaintsPage from "../components/Complaints/complaints";
+import MyComplaintsPage from "../components/Complaints/MyComplaints";
+import PendingComplaintsPage from "../components/Complaints/PendingComplaints";
+import AssginWorkOrderPage from "../components/WorkOrders/AssignWorkOrder";
+import MyWorkOrderPage from "../components/WorkOrders/MyWorkOrder";
 
 export default function MyRoutes() {
   return (
@@ -18,18 +20,16 @@ export default function MyRoutes() {
       <Route path="" element={<Login />} />
       <Route path="/welcome" element={<Welcome />} />
 
-
-   
-<Route path="/administrative/plantmaster" element={<PlantMaster/>}/>
-<Route path="/administrative/linemaster" element={<LineMaster/>}/>
-<Route path="/administrative/machinemaster" element={<MachineMaster/>}/>
-<Route path="/administrative/devicemaster" element={<DeviceMaster/>}/>
-<Route path="/administrative/breakdown" element={<BreakDown/>}/>
-<Route path="/administrative/inventorymaster" element={<InventoryMaster/>}/>
-
-     
-   
-  
+      <Route path="/administrative/plantmaster" element={<PlantMaster />} />
+      <Route path="/administrative/linemaster" element={<LineMaster />} />
+      <Route path="/administrative/machinemaster" element={<MachineMaster />} />
+      <Route path="/administrative/devicemaster" element={<DeviceMaster />} />
+      <Route path="/administrative/breakdown" element={<BreakDown />} />
+      <Route path="/complaint/all" element={<ComplaintsPage />} />
+      <Route path="/complaint/my" element={<MyComplaintsPage />} />
+      <Route path="/complaint/pending" element={<PendingComplaintsPage />} />
+      <Route path="/workorder/assign" element={<AssginWorkOrderPage />} />
+      <Route path="/workorder/my" element={<MyWorkOrderPage />} />
 
     </Routes>
   );

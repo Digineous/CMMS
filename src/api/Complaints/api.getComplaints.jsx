@@ -1,8 +1,8 @@
 import axios from "axios";
-import { baseUrl } from "../../baseUrl";
+import { baseUrl } from "../baseUrl";
 
-export const apiGetMachineInput = async () => {
-  const url = baseUrl + "/partproduction/getPartProductions";
+export const apiGetComplaints = async () => {
+  const url = baseUrl + "/cmms/complaints";
   try {
     const token=localStorage.getItem("token")
    
@@ -11,7 +11,7 @@ export const apiGetMachineInput = async () => {
     }});
     return data;
   } catch (error) {
-    console.error("Error during getting part:", error);
+    console.error("Error during getting plants:", error);
     throw error;
 }
 };
