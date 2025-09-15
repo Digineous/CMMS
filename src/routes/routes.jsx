@@ -7,6 +7,7 @@ import LineMaster from "../components/Administrative/LineMaster";
 import MachineMaster from "../components/Administrative/MachineMaster";
 import PlantMaster from "../components/Administrative/Plantmaster";
 import BreakDown from "../components/Administrative/BreakDown";
+import InventoryMaster from "../components/Administrative/InventoryMaster";
 
 
 
@@ -24,6 +25,7 @@ export default function MyRoutes() {
 <Route path="/administrative/machinemaster" element={<MachineMaster/>}/>
 <Route path="/administrative/devicemaster" element={<DeviceMaster/>}/>
 <Route path="/administrative/breakdown" element={<BreakDown/>}/>
+<Route path="/administrative/inventorymaster" element={<InventoryMaster/>}/>
 
      
    

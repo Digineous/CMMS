@@ -675,6 +675,18 @@ function NavBar() {
                 <ListItem
                   Button
                   component={Link}
+                  to="/administrative/inventorymaster"
+                  className={
+                    location.pathname === "/administrative/inventorymaster"
+                      ? "activeListItem"
+                      : ""
+                  }
+                >
+                  <ListItemText primary="Inventory" />
+                </ListItem>
+                <ListItem
+                  Button
+                  component={Link}
                   to="/administrative/devicestatus"
                   className={
                     location.pathname === "/administrative/devicestatus"

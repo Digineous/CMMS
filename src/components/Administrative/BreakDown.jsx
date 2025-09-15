@@ -14,10 +14,13 @@ import "../../assets/css/table.css";
 import "../../assets/css/style.css";
 
 // API imports (replace with your actual Breakdown APIs)
-// import { apiGetBreakdowns } from "../../api/BreakDown/api.getBreakdowns";
-// import { apiAddBreakdown } from "../../api/BreakDown/api.addBreakdown";
-// import { apiUpdateBreakdown } from "../../api/BreakDown/api.updateBreakdown";
-// import { apiRemoveBreakdown } from "../../api/BreakDown/api.removeBreakdown";
+import { addBreakdwonReson } from "../../api/Master/BreakdwonMaster/addBreakdownReson";
+import { getBreakDownReson } from "../../api/Master/BreakdwonMaster/getBreakDownReson";
+import { deleteBreakDownReson } from "../../api/Master/BreakdwonMaster/deleteBreakdownReson";
+import { updateBreakDownReason } from "../../api/Master/BreakdwonMaster/updateBreakdwonReson";
+import dayjs from "dayjs";
+
+
 
 // Styled Table
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -44,7 +47,8 @@ const BreakDown = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [updateBreakdown, setUpdateBreakdown] = useState({});
-  const [formData, setFormData] = useState({ reason: "" });
+  const [formData, setFormData] = useState({ reasonText: "" });
+  const [refresh, setRefresh] = useState(false);
 
   // Snackbar
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -59,14 +63,14 @@ const BreakDown = () => {
   useEffect(() => {
     const fetchBreakdowns = async () => {
       try {
-        const res = await apiGetBreakdowns();
+        const res = await getBreakDownReson();
         setTableData(res.data.data);
       } catch (err) {
         handleSnackbarOpen("Failed to fetch breakdowns", "error");
       }
     };
     fetchBreakdowns();
-  }, []);
+  }, [refresh]);
 
   const handleSnackbarOpen = (msg, sev) => {
     setSnackbarMessage(msg);
@@ -82,11 +86,16 @@ const BreakDown = () => {
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     try {
-      await apiAddBreakdown(formData);
+      const response = await addBreakdwonReson(formData);
+      console.log("Resosn is added :", response.data);
       handleSnackbarOpen("Breakdown added!", "success");
-      const updated = await apiGetBreakdowns();
-      setTableData(updated.data.data);
-      setFormData({ reason: "" });
+      console.log("Break Down Reson is :", formData);
+      const updated = await getBreakDownReson();
+      console.log(updated.data);
+      //setTableData(updated.data.data);
+      setFormData({ reasonText: "" });
+
+      setRefresh(!refresh);
       setAddOpen(false);
     } catch (err) {
       handleSnackbarOpen("Error adding breakdown", "error");
@@ -101,10 +110,13 @@ const BreakDown = () => {
 
   const handleUpdateSubmit = async () => {
     try {
-      await apiUpdateBreakdown(updateBreakdown);
+      console.log(updateBreakdown);
+      const response = await updateBreakDownReason(updateBreakdown);
+      console.log(response.data);
       handleSnackbarOpen("Breakdown updated!", "success");
-      const updated = await apiGetBreakdowns();
+      const updated = await getBreakDownReson();
       setTableData(updated.data.data);
+      setRefresh(!refresh);
       setEditOpen(false);
     } catch (err) {
       handleSnackbarOpen("Error updating breakdown", "error");
@@ -114,10 +126,12 @@ const BreakDown = () => {
   // Delete
   const handleDelete = async () => {
     try {
-      await apiRemoveBreakdown(deleteId);
+      await deleteBreakDownReson(deleteId);
+
       handleSnackbarOpen("Breakdown deleted!", "success");
-      const updated = await apiGetBreakdowns();
+      const updated = await getBreakDownReson();
       setTableData(updated.data.data);
+      setRefresh(!refresh);
       setDeleteId(null);
     } catch (err) {
       handleSnackbarOpen("Error deleting breakdown", "error");
@@ -166,16 +180,16 @@ const BreakDown = () => {
               tableData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row) => (
-                  <StyledTableRow key={row.breakdownId}>
-                    <StyledTableCell>{row.reason}</StyledTableCell>
-                    <StyledTableCell>{row.createdAt}</StyledTableCell>
+                  <StyledTableRow key={row.reasonNo}>
+                    <StyledTableCell>{row.reasonText}</StyledTableCell>
+                    <StyledTableCell>{dayjs(row.createdAt).format("DD/MM/YY hh:mm A")}</StyledTableCell>
                     <StyledTableCell>
                       <IconButton onClick={() => handleEdit(row)}>
                         <EditIcon />
                       </IconButton>
                       <IconButton
                         style={{ color: "#FF3131" }}
-                        onClick={() => setDeleteId(row.breakdownId)}
+                        onClick={() => setDeleteId(row.reasonNo)}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -206,9 +220,9 @@ const BreakDown = () => {
           <Typography variant="h6">Add Breakdown</Typography>
           <TextField
             fullWidth
-            name="reason"
+            name="reasonText"
             label="Breakdown Reason"
-            value={formData.reason}
+            value={formData.reasonText}
             onChange={handleInputChange}
             sx={{ mt: 2 }}
           />
@@ -224,10 +238,10 @@ const BreakDown = () => {
           <Typography variant="h6">Edit Breakdown</Typography>
           <TextField
             fullWidth
-            name="reason"
+            name="reasonText"
             label="Breakdown Reason"
-            value={updateBreakdown.reason || ""}
-            onChange={(e) => setUpdateBreakdown({ ...updateBreakdown, reason: e.target.value })}
+            value={updateBreakdown.reasonText || ""}
+            onChange={(e) => setUpdateBreakdown({ ...updateBreakdown, reasonText: e.target.value })}
             sx={{ mt: 2 }}
           />
           <Button variant="contained" onClick={handleUpdateSubmit} sx={{ mt: 2 }}>
@@ -265,4 +279,4 @@ const BreakDown = () => {
   );
 };
 
-export default BreakDown ;
+export default BreakDown;
