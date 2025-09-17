@@ -47,6 +47,39 @@ function NavBar() {
   const [state, setState] = React.useState({
     right: false,
   });
+  const role = "operator"; // default fallback
+  const allowedMenus = roleMenus[role] || [];
+  const roleMenus = {
+    operator: [
+      { path: "/complaint/all", label: "All Complaints", group: "complaints" },
+      { path: "/complaint/my", label: "My Complaints", group: "complaints" },
+    ],
+
+    operational_manager: [
+      { path: "/complaint/all", label: "All Complaints", group: "complaints" },
+      { path: "/complaint/pending", label: "Pending Complaints", group: "complaints" },
+    ],
+
+    maintenance_manager: [
+      { path: "/complaint/all", label: "All Complaints", group: "complaints" },
+      { path: "/workorder/assign", label: "Assigned Work Order", group: "workorder" },
+    ],
+
+    technician: [
+      { path: "/complaint/all", label: "All Complaints", group: "complaints" },
+      { path: "/workorder/my", label: "My Work Order", group: "workorder" },
+    ],
+
+    super_admin: [
+      { path: "/complaint/all", label: "All Complaints", group: "complaints" },
+      { path: "/complaint/my", label: "My Complaints", group: "complaints" },
+      { path: "/complaint/pending", label: "Pending Complaints", group: "complaints" },
+      { path: "/workorder/assign", label: "Assigned Work Order", group: "workorder" },
+      { path: "/workorder/my", label: "My Work Order", group: "workorder" },
+      // plus all other admin menus you already have
+    ],
+  };
+
   const navigate = useNavigate();
   const [complaintsOpen, setComplaintsOpen] = useState(false);
   const [woOpen, setWoOpen] = useState(false);
@@ -340,10 +373,10 @@ function NavBar() {
               {[
                 { path: "/administrative/plantmaster", label: "Plant Master" },
                 { path: "/administrative/linemaster", label: "Line Master" },
-                {
-                  path: "/administrative/machinemaster",
-                  label: "Machine Master",
-                },
+                { path: "/administrative/machinemaster", label: "Machine Master", },
+                { path: "/administrative/devicemaster", label: "Device Master", },
+                { path: "/administrative/breakdown", label: "Breakdown Master", },
+                { path: "/administrative/inventory", label: "Inventory Master", },
               ].map((item) => (
                 <ListItem
                   key={item.path}
