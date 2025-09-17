@@ -69,6 +69,35 @@ export default function PendingComplaintsPage() {
     description: "",
   });
   const [users, setUsers] = useState([]);
+const role = "operator"
+const allowedMenus = roleMenus[role] ;
+const roleMenus = {
+  operator: [
+    { path: "/complaint/all", label: "All Complaints" },
+    { path: "/complaint/my", label: "My Complaints" },
+  ],
+  "operational manager": [
+    { path: "/complaint/all", label: "All Complaints" },
+    { path: "/complaint/pending", label: "Pending Complaints" },
+  ],
+  "maintenance manager": [
+    { path: "/complaint/all", label: "All Complaints" },
+    { path: "/workorder/assigned", label: "Assigned Work Order" },
+  ],
+  technician: [
+    { path: "/complaint/all", label: "All Complaints" },
+    { path: "/workorder/my", label: "My Work Orders" },
+  ],
+  "super admin": [
+    { path: "/complaint/all", label: "All Complaints" },
+    { path: "/complaint/my", label: "My Complaints" },
+    { path: "/complaint/pending", label: "Pending Complaints" },
+    { path: "/workorder/assigned", label: "Assigned Work Order" },
+    { path: "/workorder/my", label: "My Work Orders" },
+  ],
+};
+
+
 
   const fetchCompliantsStatus = async () => {
     try {

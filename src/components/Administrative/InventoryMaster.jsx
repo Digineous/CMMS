@@ -14,6 +14,7 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { addInventory } from "../../api/Master/Inventory/addInventory";
 import { getInventory } from "../../api/Master/Inventory/getInventory";
 import { deleteInventory } from "../../api/Master/Inventory/deleteInventory";
+import { updateInventory } from "../../api/Master/Inventory/updateInventory";
 
 // Import your Inventory APIs here
 // import { getInventory } from "../../api/Master/Inventory/getInventory";
@@ -111,7 +112,7 @@ const InventoryMaster = () => {
 
   // EDIT
   const handleEdit = (row) => {
-    setUpdateData(row);
+    setUpdateData({...row});
     setEditOpen(true);
   };
 

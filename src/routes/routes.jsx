@@ -12,6 +12,7 @@ import MyComplaintsPage from "../components/Complaints/MyComplaints";
 import PendingComplaintsPage from "../components/Complaints/PendingComplaints";
 import AssginWorkOrderPage from "../components/WorkOrders/AssignWorkOrder";
 import MyWorkOrderPage from "../components/WorkOrders/MyWorkOrder";
+import InventoryMaster from "../components/Administrative/InventoryMaster";
 
 export default function MyRoutes() {
   return (
@@ -25,6 +26,7 @@ export default function MyRoutes() {
       <Route path="/administrative/machinemaster" element={<MachineMaster />} />
       <Route path="/administrative/devicemaster" element={<DeviceMaster />} />
       <Route path="/administrative/breakdown" element={<BreakDown />} />
+      <Route path="/administrative/inventory" element={<InventoryMaster />} />
       <Route path="/complaint/all" element={<ComplaintsPage />} />
       <Route path="/complaint/my" element={<MyComplaintsPage />} />
       <Route path="/complaint/pending" element={<PendingComplaintsPage />} />
