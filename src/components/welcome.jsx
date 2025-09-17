@@ -101,7 +101,7 @@ export default function Welcome() {
         }}
       >
         Welcome To <br />
-        Manufacturing Execution System
+        Centralized Maintenance Management Solution
       </Typography>
       <Typography
         variant="h5"
@@ -115,7 +115,7 @@ export default function Welcome() {
           textAlign: "center",
         }}
       >
-        Digitize shop floor operations to track OEE, CBM, and EMS data.
+        Healthier machines and reduced operational costs through real-time communication and effective knowledge management.
       </Typography>
     </WelcomeContainer>
   );

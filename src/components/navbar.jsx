@@ -1,30 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import "../assets/css/navbar.css";
-import {
-  faBars,
-  faClose,
-  faAngleDown,
-  faAngleUp,
-  faGear,
-  faSignOut,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBars, faSignOut } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Link, useNavigate } from "react-router-dom";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import HomeIcon from "@mui/icons-material/Home";
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import InboxIcon from "@mui/icons-material/MoveToInbox";
+import { Box, SwipeableDrawer } from "@mui/material";
+import Collapse from "@mui/material/Collapse";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import Collapse from "@mui/material/Collapse";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import SettingsIcon from "@mui/icons-material/Settings";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-import HomeIcon from "@mui/icons-material/Home";
-import { Button, SwipeableDrawer, Box } from "@mui/material";
-import brandlogo from "../assets/images/logo.png";
-import "../assets/css/navbar.css";
 import { darken } from "@mui/material/styles";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import "../assets/css/navbar.css";
+import brandlogo from "../assets/images/logo.png";
 
 function NavBar() {
   const location = useLocation();
@@ -47,71 +38,66 @@ function NavBar() {
   const [state, setState] = React.useState({
     right: false,
   });
-  const role = "operator"; // default fallback
-  const allowedMenus = roleMenus[role] || [];
+  const roleId = localStorage.getItem("roleId");
   const roleMenus = {
-    operator: [
+    1: [
+      // SuperAdmin
+      { path: "/complaint/all", label: "All Complaints", group: "complaints" },
+      { path: "/complaint/my", label: "My Complaints", group: "complaints" },
+      {
+        path: "/complaint/pending",
+        label: "Pending Complaints",
+        group: "complaints",
+      },
+      {
+        path: "/workorder/assign",
+        label: "Assigned Work Order",
+        group: "workorder",
+      },
+      { path: "/workorder/my", label: "My Work Order", group: "workorder" },
+    ],
+
+    3: [
+      // operator
       { path: "/complaint/all", label: "All Complaints", group: "complaints" },
       { path: "/complaint/my", label: "My Complaints", group: "complaints" },
     ],
 
-    operational_manager: [
+    2: [
+      // operational_manager
       { path: "/complaint/all", label: "All Complaints", group: "complaints" },
-      { path: "/complaint/pending", label: "Pending Complaints", group: "complaints" },
+      {
+        path: "/complaint/pending",
+        label: "Pending Complaints",
+        group: "complaints",
+      },
     ],
 
-    maintenance_manager: [
+    4: [
+      // maintenance_manager
       { path: "/complaint/all", label: "All Complaints", group: "complaints" },
-      { path: "/workorder/assign", label: "Assigned Work Order", group: "workorder" },
+      {
+        path: "/workorder/assign",
+        label: "Assigned Work Order",
+        group: "workorder",
+      },
     ],
 
-    technician: [
+    5: [
+      // technician
       { path: "/complaint/all", label: "All Complaints", group: "complaints" },
       { path: "/workorder/my", label: "My Work Order", group: "workorder" },
-    ],
-
-    super_admin: [
-      { path: "/complaint/all", label: "All Complaints", group: "complaints" },
-      { path: "/complaint/my", label: "My Complaints", group: "complaints" },
-      { path: "/complaint/pending", label: "Pending Complaints", group: "complaints" },
-      { path: "/workorder/assign", label: "Assigned Work Order", group: "workorder" },
-      { path: "/workorder/my", label: "My Work Order", group: "workorder" },
-      // plus all other admin menus you already have
     ],
   };
 
   const navigate = useNavigate();
   const [complaintsOpen, setComplaintsOpen] = useState(false);
   const [woOpen, setWoOpen] = useState(false);
-  const handleProductionClick = () => {
-    setUATOpen(false);
-    setMethod2Open(false);
-    setMethod1Open(false);
-    setProductionOpen(false);
-    setRawDataOpen(false);
-    setProductionOpen(!productionOpen);
-    setEmsReportOpen(false);
-  };
 
-  const handleMethod1CLick = () => {
-    setMethod1Open(!method1Open);
-    setUATOpen(false);
-    setMethod2Open(false);
-    setProductionOpen(false);
-    setRawDataOpen(false);
-    setPlantArchitectureOpen(false);
-    setEmsReportOpen(false);
-  };
-
-  const handleReportCLick = () => {
-    SetReportsOpen(!reportsOpen);
-    setUATOpen(false);
-    setMethod2Open(false);
-    setProductionOpen(false);
-    setRawDataOpen(false);
-    setPlantArchitectureOpen(false);
-    setEmsReportOpen(false);
-  };
+  useEffect(() => {
+    const roleId = localStorage.getItem("roleId");
+    console.log("Role ID:", roleId);
+  }, []);
 
   const handleAdministrativeClick = () => {
     setAdministrativeOpen(!adminstrativeOpen);
@@ -121,16 +107,6 @@ function NavBar() {
     setRawDataOpen(false);
     setPlantArchitectureOpen(false);
     setEmsReportOpen(false);
-  };
-
-  const handleEMSReportClick = () => {
-    setAdministrativeOpen(false);
-    setUATOpen(false);
-    setMethod2Open(false);
-    setProductionOpen(false);
-    setRawDataOpen(false);
-    setPlantArchitectureOpen(false);
-    setEmsReportOpen(!emsReportOpen);
   };
 
   useEffect(() => {
@@ -207,147 +183,109 @@ function NavBar() {
           </ListItem>
 
           {/* Complaints*/}
-          <ListItem
-            button
-            onClick={() => setComplaintsOpen(!complaintsOpen)}
-            sx={{
-              cursor: "pointer",
-              marginBottom: "20px",
-              bgcolor: location.pathname.startsWith("/complaint")
-                ? darken("#1faec5", 0.2)
-                : "background.paper",
-              borderRadius: 2,
-              padding: 1.5,
-            }}
-          >
-            <ListItemIcon>
-              <InboxIcon />
-            </ListItemIcon>
-            <ListItemText primary="Complaints" />
-            {complaintsOpen ? <ExpandLess /> : <ExpandMore />}
-          </ListItem>
-
-          <Collapse in={complaintsOpen} timeout="auto" unmountOnExit>
-            <List sx={{ pl: 2 }}>
+          {roleMenus[roleId]?.some((m) => m.group === "complaints") && (
+            <>
               <ListItem
                 button
-                component={Link}
-                to="/complaint/all"
+                onClick={() => setComplaintsOpen(!complaintsOpen)}
                 sx={{
                   cursor: "pointer",
-                  marginBottom: "15px",
-                  bgcolor:
-                    location.pathname === "/complaint/all"
-                      ? darken("#1faec5", 0.2)
-                      : "background.paper",
+                  marginBottom: "20px",
+                  bgcolor: location.pathname.startsWith("/complaint")
+                    ? darken("#1faec5", 0.2)
+                    : "background.paper",
                   borderRadius: 2,
-                  padding: 1.2,
+                  padding: 1.5,
                 }}
               >
-                <ListItemText primary="All Complaints" />
+                <ListItemIcon>
+                  <InboxIcon />
+                </ListItemIcon>
+                <ListItemText primary="Complaints" />
+                {complaintsOpen ? <ExpandLess /> : <ExpandMore />}
               </ListItem>
 
+              <Collapse in={complaintsOpen} timeout="auto" unmountOnExit>
+                <List sx={{ pl: 2 }}>
+                  {roleMenus[roleId]
+                    .filter((m) => m.group === "complaints")
+                    .map((item) => (
+                      <ListItem
+                        key={item.path}
+                        button
+                        component={Link}
+                        to={item.path}
+                        sx={{
+                          cursor: "pointer",
+                          marginBottom: "15px",
+                          bgcolor:
+                            location.pathname === item.path
+                              ? darken("#1faec5", 0.2)
+                              : "background.paper",
+                          borderRadius: 2,
+                          padding: 1.2,
+                        }}
+                      >
+                        <ListItemText primary={item.label} />
+                      </ListItem>
+                    ))}
+                </List>
+              </Collapse>
+            </>
+          )}
+
+          {/* Work Order (role-based) */}
+          {roleMenus[roleId]?.some((m) => m.group === "workorder") && (
+            <>
               <ListItem
                 button
-                component={Link}
-                to="/complaint/my"
+                onClick={() => setWoOpen(!woOpen)}
                 sx={{
                   cursor: "pointer",
-                  marginBottom: "15px",
-                  bgcolor:
-                    location.pathname === "/complaint/my"
-                      ? darken("#1faec5", 0.2)
-                      : "background.paper",
+                  marginBottom: "20px",
+                  bgcolor: location.pathname.startsWith("/workorder")
+                    ? darken("#1faec5", 0.2)
+                    : "background.paper",
                   borderRadius: 2,
-                  padding: 1.2,
+                  padding: 1.5,
                 }}
               >
-                <ListItemText primary="My Complaints" />
+                <ListItemIcon>
+                  <InboxIcon />
+                </ListItemIcon>
+                <ListItemText primary="Work Order" />
+                {woOpen ? <ExpandLess /> : <ExpandMore />}
               </ListItem>
+              <Collapse in={woOpen} timeout="auto" unmountOnExit>
+                <List sx={{ pl: 2 }}>
+                  {roleMenus[roleId]
+                    .filter((m) => m.group === "workorder")
+                    .map((item) => (
+                      <ListItem
+                        key={item.path}
+                        button
+                        component={Link}
+                        to={item.path}
+                        sx={{
+                          cursor: "pointer",
+                          marginBottom: "15px",
+                          bgcolor:
+                            location.pathname === item.path
+                              ? darken("#1faec5", 0.2)
+                              : "background.paper",
+                          borderRadius: 2,
+                          padding: 1.2,
+                        }}
+                      >
+                        <ListItemText primary={item.label} />
+                      </ListItem>
+                    ))}
+                </List>
+              </Collapse>
+            </>
+          )}
 
-              <ListItem
-                button
-                component={Link}
-                to="/complaint/pending"
-                sx={{
-                  cursor: "pointer",
-                  marginBottom: "15px",
-                  bgcolor:
-                    location.pathname === "/complaint/pending"
-                      ? darken("#1faec5", 0.2)
-                      : "background.paper",
-                  borderRadius: 2,
-                  padding: 1.2,
-                }}
-              >
-                <ListItemText primary="Pending Complaints" />
-              </ListItem>
-            </List>
-          </Collapse>
-
-          {/* Work Order*/}
-          <ListItem
-            button
-            onClick={() => setWoOpen(!woOpen)}
-            sx={{
-              cursor: "pointer",
-              marginBottom: "20px",
-              bgcolor: location.pathname.startsWith("/workOrder")
-                ? darken("#1faec5", 0.2)
-                : "background.paper",
-              borderRadius: 2,
-              padding: 1.5,
-            }}
-          >
-            <ListItemIcon>
-              <InboxIcon />
-            </ListItemIcon>
-            <ListItemText primary="WorkOrder" />
-            {woOpen ? <ExpandLess /> : <ExpandMore />}
-          </ListItem>
-          <Collapse in={woOpen} timeout="auto" unmountOnExit>
-            <List sx={{ pl: 2 }}>
-              <ListItem
-                button
-                component={Link}
-                to="/workorder/assign"
-                sx={{
-                  cursor: "pointer",
-                  marginBottom: "15px",
-                  bgcolor:
-                    location.pathname === "/workorder/assign"
-                      ? darken("#1faec5", 0.2)
-                      : "background.paper",
-                  borderRadius: 2,
-                  padding: 1.2,
-                }}
-              >
-                <ListItemText primary="Assign Work Order" />
-              </ListItem>
-
-              <ListItem
-                button
-                component={Link}
-                to="/workorder/my"
-                sx={{
-                  cursor: "pointer",
-                  marginBottom: "15px",
-                  bgcolor:
-                    location.pathname === "/workorder/my"
-                      ? darken("#1faec5", 0.2)
-                      : "background.paper",
-                  borderRadius: 2,
-                  padding: 1.2,
-                }}
-              >
-                <ListItemText primary="My Work Order" />
-              </ListItem>
-
-
-            </List>
-          </Collapse>
-
-          {/* Administrative */}
+          {/* Masters (always visible) */}
           <ListItem
             button
             onClick={handleAdministrativeClick}
@@ -364,7 +302,7 @@ function NavBar() {
             <ListItemIcon>
               <InboxIcon />
             </ListItemIcon>
-            <ListItemText primary="Administrative" />
+            <ListItemText primary="Masters" />
             {adminstrativeOpen ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
 
@@ -373,10 +311,22 @@ function NavBar() {
               {[
                 { path: "/administrative/plantmaster", label: "Plant Master" },
                 { path: "/administrative/linemaster", label: "Line Master" },
-                { path: "/administrative/machinemaster", label: "Machine Master", },
-                { path: "/administrative/devicemaster", label: "Device Master", },
-                { path: "/administrative/breakdown", label: "Breakdown Master", },
-                { path: "/administrative/inventory", label: "Inventory Master", },
+                {
+                  path: "/administrative/machinemaster",
+                  label: "Machine Master",
+                },
+                {
+                  path: "/administrative/devicemaster",
+                  label: "Device Master",
+                },
+                {
+                  path: "/administrative/breakdown",
+                  label: "Breakdown Master",
+                },
+                {
+                  path: "/administrative/inventory",
+                  label: "Inventory Master",
+                },
               ].map((item) => (
                 <ListItem
                   key={item.path}
@@ -399,6 +349,29 @@ function NavBar() {
               ))}
             </List>
           </Collapse>
+
+          <ListItem
+            button
+            component={Link}
+            to="/profile"
+            onClick={toggleDrawer(false)}
+            sx={{
+              cursor: "pointer",
+              marginBottom: "20px",
+              bgcolor:
+                location.pathname === "/profile"
+                  ? darken("#1faec5",
+                      0.2)
+                  : "background.paper",
+              borderRadius: 2,
+              padding: 1.5,
+            }}
+          >
+            <ListItemIcon>
+              <AccountCircleIcon />
+            </ListItemIcon>
+            <ListItemText primary="Profile" />
+          </ListItem>
 
           {/* Logout */}
           <ListItem

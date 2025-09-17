@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import '../assets/css/Login.css';
+import "../assets/css/Login.css";
 import { apiLogin } from "../api/Api.login";
 import { useNavigate } from "react-router-dom";
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 
 export default function Login() {
-  const [username, setUsername] = useState("technician");
-  const [password, setPassword] = useState("Technician@123");
+  const [username, setUsername] = useState("cmms_superadmin");
+  const [password, setPassword] = useState("Pass@123");
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [severity, setSeverity] = useState("success");
 
@@ -39,12 +39,26 @@ export default function Login() {
     event.preventDefault();
     try {
       const result = await apiLogin(username, password);
-      localStorage.setItem('token', result.data.data.token);
-      localStorage.setItem('refreshToken', result.data.data.refreshToken);
-      localStorage.setItem('tokenExpiredAt', result.data.data.tokenExpiredAt);
+      const userData = result.data.data;
 
-      if (result.data.status === 'success') {
-      navigate("/welcome");
+      // ✅ store token and metadata
+      localStorage.setItem("token", userData.token);
+      localStorage.setItem("refreshToken", userData.refreshToken);
+      localStorage.setItem("tokenExpiredAt", userData.tokenExpiredAt);
+
+      // ✅ store user info
+      localStorage.setItem("userId", userData.userId);
+      localStorage.setItem("fullName", userData.fullName);
+      localStorage.setItem("email", userData.emailId);
+      localStorage.setItem("mobile", userData.mobile);
+
+      // ✅ store roleId
+      if (userData.roles && userData.roles.length > 0) {
+        localStorage.setItem("roleId", userData.roles[0].roleId);
+      }
+
+      if (result.data.status === "success") {
+        navigate("/welcome");
       }
     } catch (error) {
       console.error("Error logging in:", error);
@@ -118,7 +132,7 @@ export default function Login() {
         <MuiAlert
           onClose={() => setOpenSnackbar(false)}
           severity={severity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbarMessage}
         </MuiAlert>
