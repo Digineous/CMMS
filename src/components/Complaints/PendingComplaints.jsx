@@ -65,7 +65,7 @@ export default function PendingComplaintsPage() {
   const [openAssignModal, setOpenAssignModal] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [assignManagerData, setAssignManagerData] = useState({
-    manager: "",
+    maintenanceManagerId: "",
     description: "",
   });
   const [users, setUsers] = useState([]);
@@ -138,7 +138,7 @@ export default function PendingComplaintsPage() {
 
       // Open Assign Manager modal after saving
       setSelectedComplaint(id);
-      setAssignManagerData({ manager: "", description: "" });
+      setAssignManagerData({ maintenanceManagerId: "", description: "" });
       setOpenAssignModal(true);
     } catch (error) {
       console.error("Error Updating Verify Status: ", error);
@@ -320,11 +320,11 @@ export default function PendingComplaintsPage() {
             select
             fullWidth
             margin="dense"
-            value={assignManagerData.manager}
+            value={assignManagerData.maintenanceManagerId}
             onChange={(e) =>
               setAssignManagerData((prev) => ({
                 ...prev,
-                manager: e.target.value,
+                maintenanceManagerId: e.target.value,
               }))
             }
           >

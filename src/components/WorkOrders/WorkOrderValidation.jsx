@@ -18,10 +18,10 @@ import {
   IconButton,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
-import { apiGetMyWorkOrders } from "../../api/WorkOrders/api.getMyWorkOrders";
+import { apigetValidation } from "../../api/WorkOrders/api.getValidation";
 import { apigetUsers } from "../../api/UserMaster/apiGetUsers";
 import { apiGetStatusComplaints } from "../../api/Complaints/api.getComplaintStatus";
-import { apiWorkorderProgress } from "../../api/WorkOrders/api.workorderprogress";
+import { apiUpdateValidation } from "../../api/WorkOrders/api.putValidation";
 
 // Styled Table
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -40,7 +40,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:last-child td, &:last-child th": { border: 0 },
 }));
 
-export default function MyWorkOrderPage() {
+export default function WorkOrderValidation() {
   const [workOrders, setWorkOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [statusList, setStatusList] = useState([]);
@@ -56,29 +56,21 @@ export default function MyWorkOrderPage() {
 
   useEffect(() => {
     fetchWorkOrders();
-    fetchUsers();
     fetchStatusList();
+    fetchUsers();
   }, []);
 
   const fetchWorkOrders = async () => {
     try {
-      const response = await apiGetMyWorkOrders();
-      const data = response.data.data || [];
-      setWorkOrders(data);
-
-      // initialize rowActions with defaults
-      const initial = {};
-      data.forEach((row) => {
-        initial[row.workorderNo] = {
-          actionType: "",
-          actionRemarks: "",
-          estimatedCompletion: "",
-          timeSpentHours: "",
-        };
+      const response = await apigetValidation();
+      setWorkOrders(response.data.data || []);
+      setSnackbar({
+        open: true,
+        message: "Work Orders fetched successfully.",
+        severity: "success",
       });
-      setRowActions(initial);
     } catch (error) {
-      console.error("Error fetching My Work Orders:", error);
+      console.error("Error fetching dummy Work Orders:", error);
       setSnackbar({
         open: true,
         message: "Error fetching work orders.",
@@ -115,7 +107,6 @@ export default function MyWorkOrderPage() {
     }
   };
 
-  // Helpers
   const getUserName = (userId) => {
     const user = users.find((u) => u.userId === userId);
     return user ? user.fullName : userId;
@@ -135,7 +126,6 @@ export default function MyWorkOrderPage() {
   const handleCloseSnackbar = () =>
     setSnackbar((prev) => ({ ...prev, open: false }));
 
-  // row-wise input handler
   const handleFieldChange = (workorderNo, field, value) => {
     setRowActions((prev) => ({
       ...prev,
@@ -144,42 +134,33 @@ export default function MyWorkOrderPage() {
   };
 
   const handleSaveRow = async (row) => {
-    // Filter out empty values from the rowActions for this row
     const fullData = rowActions[row.workorderNo];
-    const payload = Object.keys(fullData).reduce((acc, key) => {
-      const value = fullData[key];
-      if (value !== "" && value !== null && value !== undefined) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
-
-    console.log("Saving Workorder:", payload);
-
-    if (Object.keys(payload).length === 0) {
+    if (!fullData || !fullData.actionType) {
       setSnackbar({
         open: true,
-        message: "No data to save for this row.",
+        message: `Please select a status for Workorder.`,
         severity: "warning",
       });
       return;
     }
 
+    const body = {
+      status: fullData.actionType,
+      remarks: fullData.actionRemarks || "",
+      closeComplaint: fullData.actionType === 11 ? false : true,
+    };
+
     try {
-      const response = await apiWorkorderProgress(row.workorderNo, payload);
-      setSnackbar({
-        open: true,
-        message: `Workorder Progress saved.`,
-        severity: "success",
-      });
-      fetchWorkOrders(); // Refresh data
+        const response = await apiUpdateValidation(row.workorderNo, body);
+        await fetchWorkOrders();
     } catch (error) {
-      console.error("Error Saving Progress :", error);
+      console.error("Error saving work order:", error);
       setSnackbar({
         open: true,
-        message: "Error Saving Progress.",
+        message: "Error saving work order.",
         severity: "error",
       });
+      return;
     }
   };
 
@@ -202,7 +183,7 @@ export default function MyWorkOrderPage() {
         }}
       >
         <Typography variant="h5" style={{ fontWeight: "bold", color: "#fff" }}>
-          My Work Orders
+          Work Order Validation
         </Typography>
       </div>
 
@@ -220,10 +201,8 @@ export default function MyWorkOrderPage() {
               <StyledTableCell>Status</StyledTableCell>
               <StyledTableCell>Assigned At</StyledTableCell>
               <StyledTableCell>Created By</StyledTableCell>
-              <StyledTableCell>Action Type</StyledTableCell>
+              <StyledTableCell>Set Status</StyledTableCell>
               <StyledTableCell>Remarks</StyledTableCell>
-              {/* <StyledTableCell>Est. Completion</StyledTableCell>
-              <StyledTableCell>Time Spent (hrs)</StyledTableCell> */}
               <StyledTableCell>Save</StyledTableCell>
             </TableRow>
           </TableHead>
@@ -259,8 +238,19 @@ export default function MyWorkOrderPage() {
                       displayEmpty
                       fullWidth
                     >
-                      <MenuItem value="Hold">Hold</MenuItem>
-                      <MenuItem value="Complete">Complete</MenuItem>
+                      {statusList
+                        .filter(
+                          (status) =>
+                            status.statusId === 8 || status.statusId === 11
+                        )
+                        .map((status) => (
+                          <MenuItem
+                            key={status.statusId}
+                            value={status.statusId}
+                          >
+                            {status.statusName}
+                          </MenuItem>
+                        ))}
                     </Select>
                   </StyledTableCell>
 
@@ -280,44 +270,6 @@ export default function MyWorkOrderPage() {
                       fullWidth
                     />
                   </StyledTableCell>
-
-                  {/* <StyledTableCell>
-                    <TextField
-                      type="datetime-local"
-                      size="small"
-                      sx={{ width: "180px" }}
-                      value={
-                        rowActions[row.workorderNo]?.estimatedCompletion || ""
-                      }
-                      onChange={(e) =>
-                        handleFieldChange(
-                          row.workorderNo,
-                          "estimatedCompletion",
-                          e.target.value
-                        )
-                      }
-                      fullWidth
-                    />
-                  </StyledTableCell> */}
-
-                  {/* <StyledTableCell>
-                    <TextField
-                      type="number"
-                      size="small"
-                      placeholder="Hours"
-                      sx={{ width: "120px" }}
-                      value={rowActions[row.workorderNo]?.timeSpentHours || ""}
-                      onChange={(e) =>
-                        handleFieldChange(
-                          row.workorderNo,
-                          "timeSpentHours",
-                          e.target.value
-                        )
-                      }
-                      inputProps={{ min: 0, step: 0.5 }}
-                      fullWidth
-                    />
-                  </StyledTableCell> */}
 
                   <StyledTableCell>
                     <IconButton onClick={() => handleSaveRow(row)}>

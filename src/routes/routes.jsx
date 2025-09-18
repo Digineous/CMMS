@@ -14,6 +14,8 @@ import AssginWorkOrderPage from "../components/WorkOrders/AssignWorkOrder";
 import MyWorkOrderPage from "../components/WorkOrders/MyWorkOrder";
 import InventoryMaster from "../components/Administrative/InventoryMaster";
 import Profile from "../components/Profile";
+import UserMaster from "../components/Administrative/userMaster";
+import WorkOrderValidation from "../components/WorkOrders/WorkOrderValidation";
 
 export default function MyRoutes() {
   return (
@@ -34,7 +36,8 @@ export default function MyRoutes() {
       <Route path="/workorder/assign" element={<AssginWorkOrderPage />} />
       <Route path="/workorder/my" element={<MyWorkOrderPage />} />
       <Route path="/profile" element={<Profile />} />
-
+      <Route path="/administrative/usermaster" element={<UserMaster />} />
+      <Route path="/complaint/validation" element={<WorkOrderValidation />} />
     </Routes>
   );
 }
