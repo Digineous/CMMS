@@ -27,6 +27,7 @@ import { apiVerifyCompliant } from "../../api/Complaints/api.VerifyComplaint";
 import { apigetUsers } from "../../api/UserMaster/apiGetUsers";
 import { apiAssignManager } from "../../api/Complaints/api.assignManager";
 import SaveIcon from "@mui/icons-material/Save";
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 
 // Styled Table
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -203,6 +204,12 @@ export default function PendingComplaintsPage() {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
+  const handleAssignModal = async (id) => {
+    await setSelectedComplaint(id);
+    console.log("Assigned Id: ", id);
+    await setOpenAssignModal(true);
+  };
+
   return (
     <div style={{ padding: "0px 20px" }}>
       {/* Header */}
@@ -244,6 +251,7 @@ export default function PendingComplaintsPage() {
               <StyledTableCell>Set Status</StyledTableCell>
               <StyledTableCell>Set Remark</StyledTableCell>
               <StyledTableCell>Action</StyledTableCell>
+              <StyledTableCell>Assign Manager</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -306,12 +314,22 @@ export default function PendingComplaintsPage() {
                       }
                     />
                   </StyledTableCell>
+
                   <StyledTableCell>
                     <IconButton
                       size="small"
                       onClick={() => handleVerifyComplaint(row.complaintNo)}
                     >
                       <SaveIcon color="success" />
+                    </IconButton>
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleAssignModal(row.complaintNo)}
+                      disabled={row.currentStatus !== 2}
+                    >
+                      <ArrowDropUpIcon />
                     </IconButton>
                   </StyledTableCell>
                 </StyledTableRow>
