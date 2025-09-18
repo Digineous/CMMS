@@ -28,6 +28,7 @@ import { apigetLines } from "../../api/LineMaster/api.getline";
 import { apigetMachine } from "../../api/MachineMaster/apigetmachine";
 import { apiGetBreakdownReason } from "../../api/Breakdown/apiGetBreakdownReason";
 import { apigetUsers } from "../../api/UserMaster/apiGetUsers";
+import { apiGetStatusComplaints } from "../../api/Complaints/api.getComplaintStatus";
 
 // Styled Table
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -75,6 +76,32 @@ export default function MyComplaintsPage() {
   const [machine, setMachine] = useState([]);
   const [breakdownReason, setBreakdownReason] = useState([]);
   const [users, setUsers] = useState([]);
+  const [statusList, setStatusList] = useState([]);
+  const [userList, setUserList] = useState([]);
+
+
+
+  const fetchCompliantsStatus = async () => {
+    try {
+      const response = await apiGetStatusComplaints();
+      if (response?.data?.statusCode === 200) {
+        setStatusList(response.data.data || []);
+      } else {
+        throw new Error("Invalid response");
+      }
+    } catch (error) {
+      console.error("Error Fetching Status Complaints:", error);
+      setSnackbar({
+        open: true,
+        message: "Error fetching complaints status.",
+        severity: "error",
+      });
+    }
+  };
+
+
+
+
 
   // Fetch complaints
   const fetchComplaints = async () => {
@@ -151,18 +178,47 @@ export default function MyComplaintsPage() {
     }
   };
 
-    const fetchUsers = async () => {
-    try {
-      const response = await apigetUsers();
-      setUsers(response.data.data);
-    } catch (error) {
-      console.error("Error Fetching Users: ", error);
-      setSnackbar({
-        open: true,
-        message: "Error Fetching Users.",
-        severity: "error",
-      });
+ const fetchUsers = async () => {
+  try {
+    const response = await apigetUsers(); // your API call
+    if (response?.data?.statusCode === 200) {
+      const allUsers = response.data.data || [];
+
+      // Filter only Operational Managers (roleId === 2)
+      const operationalManagers = allUsers.filter((u) =>
+        u.roles?.some((role) => role.roleId === 2)
+      );
+
+      setUserList(allUsers);           // keep all for reference (if needed)
+      setUsers(operationalManagers);   // only roleId 2
+    } else {
+      throw new Error("Invalid response");
     }
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    setSnackbar({
+      open: true,
+      message: "Error fetching users.",
+      severity: "error",
+    });
+  }
+};
+
+
+  const getUserName = (userId) => {
+    const found = userList.find((u) => u.userId === userId);
+    if (!found) return userId; // fallback to ID if not found
+    return `${found.firstName} ${found.lastName || ""}`.trim();
+  };
+
+  const getStatusName = (statusId) => {
+    const found = statusList.find((s) => s.statusId === statusId);
+    return found ? found.statusName : statusId; // fallback to ID if not found
+  };
+
+  const getBreakdownReasonName = (reasonNo) => {
+    const found = breakdownReason.find((r) => r.reasonNo === reasonNo);
+    return found ? found.reasonText : reasonNo; // fallback to ID if not found
   };
 
   useEffect(() => {
@@ -172,6 +228,7 @@ export default function MyComplaintsPage() {
     fetchMachine();
     fetchBreakDownReason();
     fetchUsers();
+    fetchCompliantsStatus();
   }, []);
 
   const handleChangePage = (event, newPage) => setPage(newPage);
@@ -258,7 +315,10 @@ export default function MyComplaintsPage() {
               <StyledTableCell>Complaint No</StyledTableCell>
               <StyledTableCell>Title</StyledTableCell>
               <StyledTableCell>Description</StyledTableCell>
-              <StyledTableCell>Priority</StyledTableCell>
+              <StyledTableCell>Current Status</StyledTableCell>
+              <StyledTableCell>Assigned Operational Manager</StyledTableCell>
+              <StyledTableCell>Breakdown Reason</StyledTableCell>
+              <StyledTableCell>Breakdown Time</StyledTableCell>
               <StyledTableCell>Created At</StyledTableCell>
             </TableRow>
           </TableHead>
@@ -271,15 +331,14 @@ export default function MyComplaintsPage() {
                     <StyledTableCell>{row.complaintNo}</StyledTableCell>
                     <StyledTableCell>{row.title}</StyledTableCell>
                     <StyledTableCell>{row.description}</StyledTableCell>
-                    <StyledTableCell>
-                      {row.priority === 1
-                        ? "Low"
-                        : row.priority === 2
-                        ? "Medium"
-                        : "High"}
-                    </StyledTableCell>
+                    <StyledTableCell>{getStatusName(row.currentStatus)}</StyledTableCell>
+                    <StyledTableCell>{getUserName(row.assignedOperationalManager)}</StyledTableCell>
+                    <StyledTableCell>{getBreakdownReasonName(row.breakdownReasonNo)}</StyledTableCell>
                     <StyledTableCell>
                       {new Date(row.createdAt).toLocaleString()}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {new Date(row.breakdownTime).toLocaleString()}
                     </StyledTableCell>
                   </StyledTableRow>
                 ))}
@@ -412,14 +471,14 @@ export default function MyComplaintsPage() {
             fullWidth
             value={newComplaint.assignedOperationalManager}
             onChange={handleInputChange}
-            >
-                {users && users.map((row) => (
-                    <MenuItem key={row.userId} value={row.userId} >
-                        {row.firstName} {row.lastName}
-                    </MenuItem>
-                ))
-                }
-            </TextField>
+          >
+            {users && users.map((row) => (
+              <MenuItem key={row.userId} value={row.userId} >
+                {row.firstName} {row.lastName}
+              </MenuItem>
+            ))
+            }
+          </TextField>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseModal}>Cancel</Button>
