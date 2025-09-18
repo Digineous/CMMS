@@ -320,12 +320,16 @@ function NavBar() {
                   label: "Device Master",
                 },
                 {
-                  path: "/administrative/breakdown",
+                  path: "/administrative/breakdownmaster",
                   label: "Breakdown Master",
                 },
                 {
-                  path: "/administrative/inventory",
+                  path: "/administrative/inventorymaster",
                   label: "Inventory Master",
+                },
+                {
+                  path: "/administrative/usermaster",
+                  label: "User Master",
                 },
               ].map((item) => (
                 <ListItem

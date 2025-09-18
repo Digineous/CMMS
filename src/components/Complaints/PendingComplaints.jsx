@@ -69,6 +69,8 @@ export default function PendingComplaintsPage() {
     description: "",
   });
   const [users, setUsers] = useState([]);
+  const [userList, setUserList] = useState([]);
+
 
   const fetchCompliantsStatus = async () => {
     try {
@@ -105,16 +107,34 @@ export default function PendingComplaintsPage() {
   const fetchUsers = async () => {
     try {
       const response = await apigetUsers();
-      setUsers(response.data.data || []);
+      if (response?.data?.statusCode === 200) {
+        const allUsers = response.data.data || [];
+
+        // ✅ Only keep Maintenance Managers (roleId === 4)
+        const maintenanceManagers = allUsers.filter((u) =>
+          u.roles?.some((role) => role.roleId === 4)
+        );
+
+        setUsers(maintenanceManagers);  // for dropdown in modal
+        setUserList(allUsers);          // keep full list for getUserName()
+      } else {
+        throw new Error("Invalid response");
+      }
     } catch (error) {
       console.error("Error Fetching Users: ", error);
       setSnackbar({
         open: true,
         message: "Error Fetching User",
-        severity: "error"
-      })
+        severity: "error",
+      });
     }
-  }
+  };
+
+  const getUserName = (userId) => {
+    const found = userList.find((u) => u.userId === userId);
+    if (!found) return userId; // fallback to ID if not found
+    return `${found.firstName} ${found.lastName || ""}`.trim();
+  };
 
   useEffect(() => {
     fetchPendingComplaints();
@@ -217,7 +237,8 @@ export default function PendingComplaintsPage() {
               <StyledTableCell>Complaint No</StyledTableCell>
               <StyledTableCell>Title</StyledTableCell>
               <StyledTableCell>Description</StyledTableCell>
-              <StyledTableCell>Priority</StyledTableCell>
+              <StyledTableCell>Assigned Operational Manager</StyledTableCell>
+              <StyledTableCell>Breakdown Time</StyledTableCell>
               <StyledTableCell>Status</StyledTableCell>
               <StyledTableCell>Created At</StyledTableCell>
               <StyledTableCell>Set Status</StyledTableCell>
@@ -233,13 +254,9 @@ export default function PendingComplaintsPage() {
                   <StyledTableCell>{row.complaintNo}</StyledTableCell>
                   <StyledTableCell>{row.title}</StyledTableCell>
                   <StyledTableCell>{row.description}</StyledTableCell>
-                  <StyledTableCell>
-                    {row.priority === 1
-                      ? "Low"
-                      : row.priority === 2
-                      ? "Medium"
-                      : "High"}
-                  </StyledTableCell>
+                  <StyledTableCell>{getUserName(row.assignedOperationalManager)}</StyledTableCell>
+                  <StyledTableCell>{new Date(row.breakdownTime).toLocaleString()}</StyledTableCell>
+
                   <StyledTableCell>
                     {row.currentStatus === 1 ? "Pending" : "Closed"}
                   </StyledTableCell>
@@ -262,11 +279,14 @@ export default function PendingComplaintsPage() {
                         )
                       }
                     >
-                      {status.map((s) => (
-                        <MenuItem key={s.statusId} value={s.statusId}>
-                          {s.statusName}
-                        </MenuItem>
-                      ))}
+                      {status
+                        .filter((s) => s.statusId === 2 || s.statusId === 3)
+                        .map((s) => (
+                          <MenuItem key={s.statusId} value={s.statusId}>
+                            {s.statusName}
+                          </MenuItem>
+                        ))}
+
                     </TextField>
                   </StyledTableCell>
 
@@ -328,12 +348,14 @@ export default function PendingComplaintsPage() {
               }))
             }
           >
-            {users && users.map((row) => (
-              <MenuItem key={row.userId} value={row.userId} >
-                {row.firstName} {row.lastName}
-              </MenuItem>
-            ))}
+            {users &&
+              users.map((row) => (
+                <MenuItem key={row.userId} value={row.userId}>
+                  {row.firstName} {row.lastName}
+                </MenuItem>
+              ))}
           </TextField>
+
           <TextField
             label="Description"
             fullWidth
