@@ -16,6 +16,8 @@ import InventoryMaster from "../components/Administrative/InventoryMaster";
 import Profile from "../components/Profile";
 import UserMaster from "../components/Administrative/userMaster";
 import WorkOrderValidation from "../components/WorkOrders/WorkOrderValidation";
+import MainPointPage from "../components/Maintenance/MainPoint";
+import CheckOut from "../components/Maintenance/CheckOut";
 
 export default function MyRoutes() {
   return (
@@ -28,8 +30,8 @@ export default function MyRoutes() {
       <Route path="/administrative/linemaster" element={<LineMaster />} />
       <Route path="/administrative/machinemaster" element={<MachineMaster />} />
       <Route path="/administrative/devicemaster" element={<DeviceMaster />} />
-      <Route path="/administrative/breakdown" element={<BreakDown />} />
-      <Route path="/administrative/inventory" element={<InventoryMaster />} />
+      <Route path="/administrative/breakdownmaster" element={<BreakDown />} />
+      <Route path="/administrative/inventorymaster" element={<InventoryMaster />} />
       <Route path="/complaint/all" element={<ComplaintsPage />} />
       <Route path="/complaint/my" element={<MyComplaintsPage />} />
       <Route path="/complaint/pending" element={<PendingComplaintsPage />} />
@@ -38,6 +40,8 @@ export default function MyRoutes() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/administrative/usermaster" element={<UserMaster />} />
       <Route path="/complaint/validation" element={<WorkOrderValidation />} />
+      <Route path="/maintenance/mainpoint" element={<MainPointPage/>}/>
+      <Route path="/maintenance/checklist" element={<CheckOut/>}/>
     </Routes>
   );
 }
