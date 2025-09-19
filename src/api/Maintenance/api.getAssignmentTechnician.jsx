@@ -1,8 +1,8 @@
 import axios from "axios";
 import { baseUrl } from "../baseUrl";
 
-export const apigetPlanList = async () => {
-  const url = baseUrl + "/maintenance/plans"; 
+export const apiGetAssignmentTechnician = async () => {
+  const url = baseUrl + "/maintenance/assignedPlansForTechnician"; 
   try {
     const token=localStorage.getItem("token")
     const data = await axios.get(url, {headers:{

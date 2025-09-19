@@ -16,6 +16,8 @@ import InventoryMaster from "../components/Administrative/InventoryMaster";
 import Profile from "../components/Profile";
 import UserMaster from "../components/Administrative/userMaster";
 import WorkOrderValidation from "../components/WorkOrders/WorkOrderValidation";
+import PlanList from "../components/Maintenance/PlanList";
+import AssignmentCalendar from "../components/Maintenance/AssignmentCalendar";
 
 export default function MyRoutes() {
   return (
@@ -38,6 +40,8 @@ export default function MyRoutes() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/administrative/usermaster" element={<UserMaster />} />
       <Route path="/complaint/validation" element={<WorkOrderValidation />} />
+      <Route path="/maintenance/plan" element={<PlanList />} />
+      <Route path="/maintenance/calendar" element={<AssignmentCalendar />} />
     </Routes>
   );
 }
