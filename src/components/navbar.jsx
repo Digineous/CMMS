@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import HomeIcon from "@mui/icons-material/Home";
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import { Box, SwipeableDrawer } from "@mui/material";
 import Collapse from "@mui/material/Collapse";
@@ -30,7 +30,7 @@ function NavBar() {
   const [rawDataOpen, setRawDataOpen] = useState(false);
   const [productionOpen, setProductionOpen] = useState(false);
   const [adminstrativeOpen, setAdministrativeOpen] = useState(false);
-  const [reportsOpen, SetReportsOpen] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(false);
 
   const [method2Open, setMethod2Open] = useState(false);
   const [method1Open, setMethod1Open] = useState(false);
@@ -81,17 +81,50 @@ function NavBar() {
         label: "Assigned Work Order",
         group: "workorder",
       },
+      {
+        path: "/maintenance/calendar",
+        label: "Assignment Calendar",
+        group: "maintenance",
+      },
+      { path: "/maintenance/plan", label: "Plan List", group: "maintenance" },
+      {
+        path: "/maintenance/mainpoint",
+        label: "Main Point",
+        group: "maintenance",
+      },
+      {
+        path: "/maintenance/checklist",
+        label: "Check List",
+        group: "maintenance",
+      },
     ],
 
     5: [
       // technician
       { path: "/complaint/all", label: "All Complaints", group: "complaints" },
       { path: "/workorder/my", label: "My Work Order", group: "workorder" },
+      {
+        path: "/maintenance/calendar",
+        label: "Assignment Calendar",
+        group: "maintenance",
+      },
+      { path: "/maintenance/plan", label: "Plan List", group: "maintenance" },
+      {
+        path: "/maintenance/mainpoint",
+        label: "Main Point",
+        group: "maintenance",
+      },
+      {
+        path: "/maintenance/checklist",
+        label: "Check List",
+        group: "maintenance",
+      },
     ],
   };
 
   const navigate = useNavigate();
   const [complaintsOpen, setComplaintsOpen] = useState(false);
+  const [maintenanceOpen, setMaintenanceOpen] = useState(false);
   const [woOpen, setWoOpen] = useState(false);
 
   useEffect(() => {
@@ -284,6 +317,115 @@ function NavBar() {
               </Collapse>
             </>
           )}
+          {roleMenus[roleId]?.some((m) => m.group === "maintenance") && (
+            <>
+              <ListItem
+                button
+                onClick={() => setMaintenanceOpen(!maintenanceOpen)}
+                sx={{
+                  cursor: "pointer",
+                  marginBottom: "20px",
+                  bgcolor: location.pathname.startsWith("/maintenance")
+                    ? darken("#1faec5", 0.2)
+                    : "background.paper",
+                  borderRadius: 2,
+                  padding: 1.5,
+                }}
+              >
+                <ListItemIcon>
+                  <InboxIcon />
+                </ListItemIcon>
+                <ListItemText primary="Maintenance" />
+                {maintenanceOpen ? <ExpandLess /> : <ExpandMore />}
+              </ListItem>
+
+              <Collapse in={maintenanceOpen} timeout="auto" unmountOnExit>
+                <List sx={{ pl: 2 }}>
+                  {roleMenus[roleId]
+                    .filter((m) => m.group === "maintenance")
+                    .map((item) => (
+                      <ListItem
+                        key={item.path}
+                        button
+                        component={Link}
+                        to={item.path}
+                        sx={{
+                          cursor: "pointer",
+                          marginBottom: "15px",
+                          bgcolor:
+                            location.pathname === item.path
+                              ? darken("#1faec5", 0.2)
+                              : "background.paper",
+                          borderRadius: 2,
+                          padding: 1.2,
+                        }}
+                      >
+                        <ListItemText primary={item.label} />
+                      </ListItem>
+                    ))}
+                </List>
+              </Collapse>
+            </>
+          )}
+
+          <ListItem
+            button
+            onClick={() => setReportsOpen(!reportsOpen)}
+            sx={{
+              cursor: "pointer",
+              marginBottom: "20px",
+              bgcolor: location.pathname.startsWith("/reports")
+                ? darken("#1faec5", 0.2)
+                : "background.paper",
+              borderRadius: 2,
+              padding: 1.5,
+            }}
+          >
+            <ListItemIcon>
+              <InboxIcon />
+            </ListItemIcon>
+            <ListItemText primary="Reports" />
+            {reportsOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItem>
+
+          <Collapse in={reportsOpen} timeout="auto" unmountOnExit>
+            <List sx={{ pl: 2 }}>
+              <ListItem
+                button
+                component={Link}
+                to="/reports/mttrmtbfdetails"
+                sx={{
+                  cursor: "pointer",
+                  marginBottom: "15px",
+                  bgcolor:
+                    location.pathname === "/reports/mttrmtbfdetails"
+                      ? darken("#1faec5", 0.2)
+                      : "background.paper",
+                  borderRadius: 2,
+                  padding: 1.2,
+                }}
+              >
+                <ListItemText primary="MTTR & MTBF Summary" />
+              </ListItem>
+              <ListItem
+                button
+                component={Link}
+                to="/reports/mttrmtbfbymachine"
+                sx={{
+                  cursor: "pointer",
+                  marginBottom: "15px",
+                  bgcolor:
+                    location.pathname === "/reports/mttrmtbfbymachine"
+                      ? darken("#1faec5", 0.2)
+                      : "background.paper",
+                  borderRadius: 2,
+                  padding: 1.2,
+                }}
+              >
+                <ListItemText primary="MTTR & MTBF By Machine" />
+              </ListItem>
+            </List>
+          </Collapse>
 
           {/* Masters (always visible) */}
           <ListItem
@@ -364,8 +506,7 @@ function NavBar() {
               marginBottom: "20px",
               bgcolor:
                 location.pathname === "/profile"
-                  ? darken("#1faec5",
-                      0.2)
+                  ? darken("#1faec5", 0.2)
                   : "background.paper",
               borderRadius: 2,
               padding: 1.5,

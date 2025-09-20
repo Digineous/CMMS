@@ -16,10 +16,14 @@ import InventoryMaster from "../components/Administrative/InventoryMaster";
 import Profile from "../components/Profile";
 import UserMaster from "../components/Administrative/userMaster";
 import WorkOrderValidation from "../components/WorkOrders/WorkOrderValidation";
+import AssignmentCalendar from "../components/Maintenance/AssignmentCalendar";
+import PlanList from "../components/Maintenance/PlanList";
 import MainPointPage from "../components/Maintenance/MainPoint";
-import CheckOut from "../components/Maintenance/CheckOut";
-import ComplaintsHistory from "../components/Complaints/ComplaintsHistory";
-import WorkOrderHistory from "../components/WorkOrders/WorkOrderHistory";
+
+import CheckList from "../components/Maintenance/CheckList";
+import MttrMtbfReportByMachine from "../components/Reports/MttrMtbfByMachine";
+import MTTRMTBFSummaryReport from "../components/Reports/mttrmtdfDetails";
+
 
 export default function MyRoutes() {
   return (
@@ -42,10 +46,14 @@ export default function MyRoutes() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/administrative/usermaster" element={<UserMaster />} />
       <Route path="/complaint/validation" element={<WorkOrderValidation />} />
-      <Route path="/maintenance/mainpoint" element={<MainPointPage/>}/>
-      <Route path="/maintenance/checklist" element={<CheckOut/>}/>
-      <Route path="/complaint/complaintshistory/" element={<ComplaintsHistory/>}/>
-      <Route path="/workorder/workorderhistory/" element={<WorkOrderHistory/>}/>
+
+
+      <Route path="/maintenance/calendar" element={<AssignmentCalendar />} />
+      <Route path="/maintenance/plan" element={<PlanList />} />
+      <Route path="/maintenance/mainpoint" element={<MainPointPage />} />
+      <Route path="/maintenance/checklist" element={<CheckList />} />
+      <Route path="/reports/mttrmtbfdetails" element={<MttrMtbfReportByMachine />} />
+      <Route path="/reports/mttrmtbfbymachine" element={<MTTRMTBFSummaryReport />} />
     </Routes>
   );
 }
