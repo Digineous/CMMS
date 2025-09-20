@@ -34,6 +34,7 @@ import { apigetUsers } from "../../api/UserMaster/apiGetUsers";
 import { apigetPlanList } from "../../api/Maintenance/api.GetPlanList";
 import EditIcon from "@mui/icons-material/Edit";
 import { apiUpdateAssignment } from "../../api/Maintenance/api.updateAssignment";
+import { apiGetAssignedPlan } from "../../api/Maintenance/api.getAssginedPlan";
 
 // Styled Table Cells
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -75,17 +76,23 @@ export default function AssignmentCalendar() {
     "Assignments InProgress"
   );
   const [selectedAssignmentId, setSelectedAssignmentId] = useState(null);
+  const roleId = Number(localStorage.getItem("roleId"));
 
   const handleTabChange = (event, newValue) => setTab(newValue);
 
   const fetchAssignments = async () => {
-    try {
-      const response = await apiGetAssignmentTechnician();
-      if (response.data.statusCode === 200) {
-        setCalendar(response.data.data);
+    // Read roleId fresh
+    const roleIdStr = localStorage.getItem("roleId");
+    const roleId = Number(roleIdStr);
+    const api = roleId === 4 ? apiGetAssignedPlan : apiGetAssignmentTechnician;
 
-        // Map events for calendar
-        const mappedEvents = response.data.data.map((item) => {
+    try {
+      const response = await api();
+      if (response?.data?.statusCode === 200) {
+        const assignments = response.data.data || [];
+        setCalendar(assignments);
+
+        const mappedEvents = assignments.map((item) => {
           const today = new Date();
           const startDate = new Date(item.scheduledStart);
           const endDate = new Date(item.scheduledEnd);
@@ -105,17 +112,23 @@ export default function AssignmentCalendar() {
             extendedProps: item,
           };
         });
+
         setEvents(mappedEvents);
+      } else {
+        setCalendar([]);
+        setEvents([]);
       }
     } catch (error) {
       console.error("Error fetching assignments:", error);
+      setCalendar([]);
+      setEvents([]);
     }
   };
 
   useEffect(() => {
-    fetchAssignments();
     fetchUsers();
     fetchPlans();
+    fetchAssignments();
   }, []);
 
   const fetchPlans = async () => {

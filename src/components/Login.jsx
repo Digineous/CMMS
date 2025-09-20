@@ -8,8 +8,8 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 
 export default function Login() {
-  const [username, setUsername] = useState("cmms_superadmin");
-  const [password, setPassword] = useState("Pass@123");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);

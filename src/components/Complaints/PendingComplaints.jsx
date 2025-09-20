@@ -27,7 +27,7 @@ import { apiVerifyCompliant } from "../../api/Complaints/api.VerifyComplaint";
 import { apigetUsers } from "../../api/UserMaster/apiGetUsers";
 import { apiAssignManager } from "../../api/Complaints/api.assignManager";
 import SaveIcon from "@mui/icons-material/Save";
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import AssignmentAddIcon from '@mui/icons-material/AssignmentAdd';
 
 // Styled Table
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -136,6 +136,11 @@ export default function PendingComplaintsPage() {
     if (!found) return userId; // fallback to ID if not found
     return `${found.firstName} ${found.lastName || ""}`.trim();
   };
+  
+    const getStatusName = (statusId) => {
+    const found = status.find((s) => s.statusId === statusId);
+    return found ? found.statusName : statusId; // fallback to ID if not found
+  };
 
   useEffect(() => {
     fetchPendingComplaints();
@@ -234,7 +239,7 @@ export default function PendingComplaintsPage() {
       </div>
 
       {/* Table */}
-      <Box>
+      <Box sx={{ overflow: "auto" }}>
         <Table
           size="small"
           style={{ boxShadow: "0px 0px 5px rgba(0, 0, 0, 0.3)" }}
@@ -266,7 +271,7 @@ export default function PendingComplaintsPage() {
                   <StyledTableCell>{new Date(row.breakdownTime).toLocaleString()}</StyledTableCell>
 
                   <StyledTableCell>
-                    {row.currentStatus === 1 ? "Pending" : "Closed"}
+                    {getStatusName(row.currentStatus)}
                   </StyledTableCell>
                   <StyledTableCell>
                     {new Date(row.createdAt).toLocaleString()}
@@ -326,10 +331,11 @@ export default function PendingComplaintsPage() {
                   <StyledTableCell>
                     <IconButton
                       size="small"
+                      color="secondary"
                       onClick={() => handleAssignModal(row.complaintNo)}
                       disabled={row.currentStatus !== 2}
                     >
-                      <ArrowDropUpIcon />
+                      <AssignmentAddIcon />
                     </IconButton>
                   </StyledTableCell>
                 </StyledTableRow>

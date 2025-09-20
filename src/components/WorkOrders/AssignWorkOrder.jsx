@@ -16,6 +16,7 @@ import {
   MenuItem,
   IconButton,
   Modal,
+  Button,
 } from "@mui/material";
 import { apiGetAssginWorkOrder } from "../../api/WorkOrders/api.getassignworkorder";
 import { apigetUsers } from "../../api/UserMaster/apiGetUsers";
@@ -23,8 +24,8 @@ import { apiGetStatusComplaints } from "../../api/Complaints/api.getComplaintSta
 import { apiVerifyWorkorder } from "../../api/WorkOrders/api.verifyworkorder";
 import { apiAssignTechnician } from "../../api/WorkOrders/api.assignTechnician";
 import SaveIcon from "@mui/icons-material/Save";
-import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
-import EngineeringIcon from '@mui/icons-material/Engineering';
+import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
+import EngineeringIcon from "@mui/icons-material/Engineering";
 
 // Styled Table Cells
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -60,7 +61,6 @@ export default function AssginWorkOrderPage() {
   const [rowValues, setRowValues] = useState({});
   const [status, setStatus] = useState([]);
 
-
   const [openStatusModal, setOpenStatusModal] = useState(false);
   const [openTechnicianModal, setOpenTechnicianModal] = useState(false);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState(null);
@@ -81,7 +81,6 @@ export default function AssginWorkOrderPage() {
     setSelectedWorkOrder(null);
   };
 
-
   useEffect(() => {
     fetchWorkOrders();
     fetchUsers();
@@ -92,7 +91,6 @@ export default function AssginWorkOrderPage() {
     try {
       const response = await apiGetStatusComplaints();
       setStatus(response.data.data);
-
     } catch (error) {
       console.error("Error fetching Status:", error);
       setSnackbar({
@@ -142,7 +140,13 @@ export default function AssginWorkOrderPage() {
 
     try {
       const response = await apiVerifyWorkorder(workorderNo, body);
-      await handleAssignWorkorder(workorderNo);
+      setOpenStatusModal(false);
+      setSnackbar({
+        open: true,
+        message: "Work order verified successfully.",
+        severity: "success",
+      });
+      await fetchWorkOrders();
     } catch (error) {
       console.error("Error verify Work Orders:", error);
       setSnackbar({
@@ -164,6 +168,12 @@ export default function AssginWorkOrderPage() {
     try {
       const response = await apiAssignTechnician(workorderNo, body);
       await fetchWorkOrders();
+      setOpenTechnicianModal(false);
+      setSnackbar({
+        open: true,
+        message: "Technician assigned successfully.",
+        severity: "success",
+      });
     } catch (error) {
       console.error("Error assigning technician :", error);
       setSnackbar({
@@ -244,14 +254,14 @@ export default function AssginWorkOrderPage() {
               <StyledTableCell>Assigned At</StyledTableCell>
               <StyledTableCell>Description</StyledTableCell>
               <StyledTableCell>Status</StyledTableCell>
-              <StyledTableCell>Created By</StyledTableCell>
+              {/* <StyledTableCell>Created By</StyledTableCell>
               <StyledTableCell>Created At</StyledTableCell>
               <StyledTableCell>Updated By</StyledTableCell>
-              <StyledTableCell>Updated At</StyledTableCell>
+              <StyledTableCell>Updated At</StyledTableCell> */}
               {/* New columns */}
               <StyledTableCell>Update Status</StyledTableCell>
               <StyledTableCell>Assign Technician</StyledTableCell>
-              <StyledTableCell>Action</StyledTableCell>
+              {/* <StyledTableCell>Action</StyledTableCell> */}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -269,7 +279,7 @@ export default function AssginWorkOrderPage() {
                   </StyledTableCell>
                   <StyledTableCell>{row.description}</StyledTableCell>
                   <StyledTableCell>{getStatusName(row.status)}</StyledTableCell>
-                  <StyledTableCell>
+                  {/* <StyledTableCell>
                     {getUserFullName(row.createdBy)}
                   </StyledTableCell>
                   <StyledTableCell>
@@ -280,12 +290,13 @@ export default function AssginWorkOrderPage() {
                   </StyledTableCell>
                   <StyledTableCell>
                     {new Date(row.updatedAt).toLocaleString()}
-                  </StyledTableCell>
+                  </StyledTableCell> */}
 
                   {/* New editable fields */}
                   <StyledTableCell>
                     <IconButton onClick={() => handleOpenStatusModal(row)}>
-                      <SystemUpdateAltIcon fontSize="large" color="primary" /> {/* you can use EditIcon if better */}
+                      <SystemUpdateAltIcon fontSize="large" color="primary" />{" "}
+                      {/* you can use EditIcon if better */}
                     </IconButton>
                   </StyledTableCell>
 
@@ -295,14 +306,14 @@ export default function AssginWorkOrderPage() {
                     </IconButton>
                   </StyledTableCell>
 
-                  <StyledTableCell>
+                  {/* <StyledTableCell>
                     <IconButton
                       size="small"
                       onClick={() => handleVerifyWorkorder(row.workorderNo)}
                     >
                       <SaveIcon fontSize="large" color="success" />
                     </IconButton>
-                  </StyledTableCell>
+                  </StyledTableCell> */}
                 </StyledTableRow>
               ))}
           </TableBody>
@@ -320,7 +331,16 @@ export default function AssginWorkOrderPage() {
         />
       </Box>
       <Modal open={openStatusModal} onClose={handleCloseModals}>
-        <Box sx={{ p: 3, backgroundColor: "white", borderRadius: 2, width: 400, mx: "auto", mt: 10 }}>
+        <Box
+          sx={{
+            p: 3,
+            backgroundColor: "white",
+            borderRadius: 2,
+            width: 400,
+            mx: "auto",
+            mt: 10,
+          }}
+        >
           <Typography variant="h6">Update Status</Typography>
           <TextField
             select
@@ -329,7 +349,11 @@ export default function AssginWorkOrderPage() {
             margin="normal"
             value={rowValues[selectedWorkOrder?.workorderNo]?.status || ""}
             onChange={(e) =>
-              handleRowChange(selectedWorkOrder.workorderNo, "status", e.target.value)
+              handleRowChange(
+                selectedWorkOrder.workorderNo,
+                "status",
+                e.target.value
+              )
             }
           >
             {status
@@ -344,20 +368,48 @@ export default function AssginWorkOrderPage() {
             label="Status Remark"
             fullWidth
             margin="normal"
-            value={rowValues[selectedWorkOrder?.workorderNo]?.statusRemarks || ""}
+            value={
+              rowValues[selectedWorkOrder?.workorderNo]?.statusRemarks || ""
+            }
             onChange={(e) =>
-              handleRowChange(selectedWorkOrder.workorderNo, "statusRemarks", e.target.value)
+              handleRowChange(
+                selectedWorkOrder.workorderNo,
+                "statusRemarks",
+                e.target.value
+              )
             }
           />
           <Box mt={2} textAlign="right">
-            <IconButton onClick={() => handleVerifyWorkorder(selectedWorkOrder.workorderNo)}>
-              <SystemUpdateAltIcon color="success" />
-            </IconButton>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() =>
+                handleVerifyWorkorder(selectedWorkOrder.workorderNo)
+              }
+              sx={{
+                borderRadius: 2,
+                fontWeight: "bold",
+                textTransform: "none",
+                px: 3, // padding left-right
+                boxShadow: "0px 4px 6px rgba(0,0,0,0.2)",
+              }}
+            >
+              Verify
+            </Button>
           </Box>
         </Box>
       </Modal>
       <Modal open={openTechnicianModal} onClose={handleCloseModals}>
-        <Box sx={{ p: 3, backgroundColor: "white", borderRadius: 2, width: 400, mx: "auto", mt: 10 }}>
+        <Box
+          sx={{
+            p: 3,
+            backgroundColor: "white",
+            borderRadius: 2,
+            width: 400,
+            mx: "auto",
+            mt: 10,
+          }}
+        >
           <Typography variant="h6">Assign Technician</Typography>
           <TextField
             select
@@ -366,12 +418,19 @@ export default function AssginWorkOrderPage() {
             margin="normal"
             value={rowValues[selectedWorkOrder?.workorderNo]?.technician || ""}
             onChange={(e) =>
-              handleRowChange(selectedWorkOrder.workorderNo, "technician", e.target.value)
+              handleRowChange(
+                selectedWorkOrder.workorderNo,
+                "technician",
+                e.target.value
+              )
             }
           >
             {users
-              .filter((u) =>
-                u.roles?.some((r) => r.roleId === 5 && r.roleName === "Technician") // ✅ Only technicians
+              .filter(
+                (u) =>
+                  u.roles?.some(
+                    (r) => r.roleId === 5 && r.roleName === "Technician"
+                  ) // ✅ Only technicians
               )
               .map((u) => (
                 <MenuItem key={u.userId} value={u.userId}>
@@ -383,19 +442,37 @@ export default function AssginWorkOrderPage() {
             label="Technician Remarks"
             fullWidth
             margin="normal"
-            value={rowValues[selectedWorkOrder?.workorderNo]?.technicianRemarks || ""}
+            value={
+              rowValues[selectedWorkOrder?.workorderNo]?.technicianRemarks || ""
+            }
             onChange={(e) =>
-              handleRowChange(selectedWorkOrder.workorderNo, "technicianRemarks", e.target.value)
+              handleRowChange(
+                selectedWorkOrder.workorderNo,
+                "technicianRemarks",
+                e.target.value
+              )
             }
           />
           <Box mt={2} textAlign="right">
-            <IconButton onClick={() => handleAssignWorkorder(selectedWorkOrder.workorderNo)}>
-              <SaveIcon color="success" />
-            </IconButton>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() =>
+                handleAssignWorkorder(selectedWorkOrder.workorderNo)
+              }
+              sx={{
+                borderRadius: 2,
+                fontWeight: "bold",
+                textTransform: "none",
+                px: 3, // padding left-right
+                boxShadow: "0px 4px 6px rgba(0,0,0,0.2)",
+              }}
+            >
+              Save
+            </Button>
           </Box>
         </Box>
       </Modal>
-
 
       {/* Snackbar */}
       <Snackbar
