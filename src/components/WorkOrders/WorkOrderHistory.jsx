@@ -203,11 +203,11 @@ export default function WorkOrderHistory() {
           <Button
               variant="contained"
               sx={{ margin: "5px" }}
-              color="secondary"
+              color="primary"
               onClick={handleOkClick}
               disabled={!selectedWorkOrder}
             >
-              Get History
+              Ok
             </Button>
         </Box>
       </Box>

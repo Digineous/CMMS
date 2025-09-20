@@ -104,7 +104,7 @@ function NavBar() {
         group: "reports",
       },
       {
-        path: "/reports/complainthistory",
+        path: "/reports/complaintshistory",
         label: "Complaint History",
         group: "reports",
       },
@@ -177,7 +177,7 @@ function NavBar() {
         group: "reports",
       },
       {
-        path: "/reports/complainthistory",
+        path: "/reports/complaintshistory",
         label: "Complaint History",
         group: "reports",
       },
@@ -241,7 +241,7 @@ function NavBar() {
         group: "reports",
       },
       {
-        path: "/reports/complainthistory",
+        path: "/reports/complaintshistory",
         label: "Complaint History",
         group: "reports",
       },
@@ -327,7 +327,7 @@ function NavBar() {
         group: "reports",
       },
       {
-        path: "/reports/complainthistory",
+        path: "/reports/complaintshistory",
         label: "Complaint History",
         group: "reports",
       },
@@ -398,7 +398,7 @@ function NavBar() {
       //   group: "reports",
       // },
       // {
-      //   path: "/reports/complainthistory",
+      //   path: "/reports/complaintshistory",
       //   label: "Complaint History",
       //   group: "reports",
       // },

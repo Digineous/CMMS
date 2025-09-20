@@ -76,7 +76,7 @@ export default function AssignmentCalendar() {
     "Assignments InProgress"
   );
   const [selectedAssignmentId, setSelectedAssignmentId] = useState(null);
-  const roleId = Number(localStorage.getItem("roleId"));
+  const role = Number(localStorage.getItem("roleId"));
 
   const handleTabChange = (event, newValue) => setTab(newValue);
 
@@ -341,7 +341,7 @@ CreatedAt: ${new Date(data.createdAt).toLocaleString()}
                   <StyledTableCell>Assigned By</StyledTableCell>
                   <StyledTableCell>Scheduled Start</StyledTableCell>
                   <StyledTableCell>Scheduled End</StyledTableCell>
-                  <StyledTableCell>Action</StyledTableCell>
+                  {role === 5 && <StyledTableCell>Action</StyledTableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -371,14 +371,16 @@ CreatedAt: ${new Date(data.createdAt).toLocaleString()}
                       <StyledTableCell>
                         {new Date(item.scheduledEnd).toLocaleString()}
                       </StyledTableCell>
-                      <StyledTableCell>
-                        <IconButton
-                          color="primary"
-                          onClick={() => handleOpenDialog(item)}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </StyledTableCell>
+                      {role === 5 && (
+                        <StyledTableCell>
+                          <IconButton
+                            color="primary"
+                            onClick={() => handleOpenDialog(item)}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </StyledTableCell>
+                      )}
                     </StyledTableRow>
                   );
                 })}

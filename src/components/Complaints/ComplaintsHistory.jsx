@@ -180,14 +180,14 @@ export default function ComplaintsHistory() {
                       <Button
                             variant="contained"
                             sx={{ margin: "5px" }}
-                            color="secondary"
+                            color="primary"
                             onClick={() => {
                                 handleOkClick();
                                 setShowDetails(false); // 👈 hide details when clicking
                             }}
                             disabled={!selectedComplaint}
                         >
-                            Get History
+                            Ok
                         </Button>
 
                 </Box>

@@ -108,7 +108,7 @@ export default function ComplaintsPage() {
           );
   
           setUserList(allUsers); // keep all for reference (if needed)
-          setUsers(operationalManagers); // only roleId 2
+          // setUsers(operationalManagers); // only roleId 2
         } else {
           throw new Error("Invalid response");
         }
