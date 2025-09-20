@@ -30,7 +30,7 @@ function NavBar() {
   const [rawDataOpen, setRawDataOpen] = useState(false);
   const [productionOpen, setProductionOpen] = useState(false);
   const [adminstrativeOpen, setAdministrativeOpen] = useState(false);
-  const [reportsOpen, SetReportsOpen] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(false);
 
   const [method2Open, setMethod2Open] = useState(false);
   const [method1Open, setMethod1Open] = useState(false);
@@ -367,6 +367,65 @@ function NavBar() {
               </Collapse>
             </>
           )}
+
+          <ListItem
+            button
+            onClick={() => setReportsOpen(!reportsOpen)}
+            sx={{
+              cursor: "pointer",
+              marginBottom: "20px",
+              bgcolor: location.pathname.startsWith("/reports")
+                ? darken("#1faec5", 0.2)
+                : "background.paper",
+              borderRadius: 2,
+              padding: 1.5,
+            }}
+          >
+            <ListItemIcon>
+              <InboxIcon />
+            </ListItemIcon>
+            <ListItemText primary="Reports" />
+            {reportsOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItem>
+
+          <Collapse in={reportsOpen} timeout="auto" unmountOnExit>
+            <List sx={{ pl: 2 }}>
+              <ListItem
+                button
+                component={Link}
+                to="/reports/mttrmtbfdetails"
+                sx={{
+                  cursor: "pointer",
+                  marginBottom: "15px",
+                  bgcolor:
+                    location.pathname === "/reports/mttrmtbfdetails"
+                      ? darken("#1faec5", 0.2)
+                      : "background.paper",
+                  borderRadius: 2,
+                  padding: 1.2,
+                }}
+              >
+                <ListItemText primary="MTTR & MTBF Summary" />
+              </ListItem>
+              <ListItem
+                button
+                component={Link}
+                to="/reports/mttrmtbfbymachine"
+                sx={{
+                  cursor: "pointer",
+                  marginBottom: "15px",
+                  bgcolor:
+                    location.pathname === "/reports/mttrmtbfbymachine"
+                      ? darken("#1faec5", 0.2)
+                      : "background.paper",
+                  borderRadius: 2,
+                  padding: 1.2,
+                }}
+              >
+                <ListItemText primary="MTTR & MTBF By Machine" />
+              </ListItem>
+            </List>
+          </Collapse>
 
           {/* Masters (always visible) */}
           <ListItem

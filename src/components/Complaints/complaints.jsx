@@ -1,25 +1,21 @@
-import React, { useState, useEffect } from "react";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import React, { useEffect, useState } from "react";
 import {
-  Typography,
-  Tabs,
-  Tab,
   Box,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  Typography,
+  TablePagination,
   styled,
   tableCellClasses,
-  Tooltip,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-import { apiGetAssignmentTechnician } from "../../api/Maintenance/api.getAssignmentTechnician";
+import { apiGetComplaints } from "../../api/Complaints/api.getComplaints";
 
-// Styled table cells
+// Styled Table
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: "#1FAEC5",
@@ -40,185 +36,137 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-export default function AssignmentCalendar() {
-  const [events, setEvents] = useState([]);
-  const [calendar, setCalendar] = useState([]);
-  const [tab, setTab] = useState(0);
+export default function ComplaintsPage() {
+  const [complaints, setComplaints] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  const handleTabChange = (event, newValue) => {
-    setTab(newValue);
-  };
-
-  // Fetch assignments
-  const fetchAssignments = async () => {
+  // Fetch complaints
+  const fetchComplaints = async () => {
     try {
-      const response = await apiGetAssignmentTechnician();
-      if (response.data.statusCode === 200) {
-        setCalendar(response.data.data);
+      const response = await apiGetComplaints();
+      if (response?.data.statusCode === 200) {
+        setComplaints(response.data.data || []);
+      } else {
+        throw new Error("Invalid response from API");
       }
     } catch (error) {
-      console.error("Error fetching assignments:", error);
+      console.error("Error Fetching Complaints :", error);
+      setSnackbar({
+        open: true,
+        message: "Error fetching complaints. Showing dummy data.",
+        severity: "error",
+      });
     }
   };
 
   useEffect(() => {
-    fetchAssignments();
+    fetchComplaints();
   }, []);
 
-  useEffect(() => {
-    const mappedEvents = calendar.map((item) => {
-      const today = new Date();
-      const startDate = new Date(item.scheduledStart);
-      const endDate = new Date(item.scheduledEnd);
+  const handleChangePage = (event, newPage) => setPage(newPage);
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
-      // Opacity colors
-      let backgroundColor = "rgba(0, 128, 0, 0.3)"; // future green
-      if (endDate < today) backgroundColor = "rgba(255, 0, 0, 0.3)"; // past red
-      else if (startDate <= today && endDate >= today)
-        backgroundColor = "rgba(255, 255, 0, 0.8)"; // today yellow
-
-      return {
-        id: item.assignmentNo,
-        title: item.assignmentDescription,
-        start: item.scheduledStart,
-        end: item.scheduledEnd,
-        backgroundColor,
-        borderColor: backgroundColor,
-        extendedProps: { ...item },
-      };
-    });
-    setEvents(mappedEvents);
-  }, [calendar]);
-
-  // Custom event content with styled tooltip
-  const renderEventContent = (eventInfo) => {
-    const data = eventInfo.event.extendedProps;
-
-    const tooltipContent = (
-      <Box
-        sx={{
-          p: 1,
-          bgcolor: "rgba(0,0,0,0.85)",
-          color: "#fff",
-          borderRadius: 1,
-          fontSize: 12,
-        }}
-      >
-        PlanNo: {data.planNo} <br />
-        AssignedTo: {data.assignedTo} <br />
-        AssignedBy: {data.assignedBy} <br />
-        Process: {data.processDescription || "N/A"} <br />
-        CreatedAt: {new Date(data.createdAt).toLocaleString()}
-      </Box>
-    );
-
-    return (
-      <Tooltip
-        title={tooltipContent}
-        arrow
-        placement="top"
-        componentsProps={{
-          tooltip: { sx: { bgcolor: "transparent", boxShadow: "none" } },
-        }}
-      >
-        <Box
-          sx={{
-            fontSize: "11px",
-            lineHeight: "1.2em",
-            backgroundColor: eventInfo.event.backgroundColor,
-            padding: "2px 4px",
-            borderRadius: "4px",
-            fontWeight: "bold",
-            textAlign: "center",
-            color: "#000",
-            cursor: "pointer",
-          }}
-        >
-          {data.assignmentDescription} <br /> {data.status}
-        </Box>
-      </Tooltip>
-    );
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   return (
     <div style={{ padding: "0px 20px" }}>
-      {/* Gradient Header */}
-      <Box
-        sx={{
+      {/* Header */}
+      <div
+        style={{
           display: "flex",
           alignItems: "center",
           background:
             "linear-gradient(to right, rgb(0, 93, 114), rgb(79, 223, 255))",
           padding: "5px",
           borderRadius: "8px",
-          marginBottom: 2,
-          marginTop: 1,
+          marginBottom: "20px",
+          marginTop: "10px",
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
           color: "white",
+          justifyContent: "space-between",
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: "bold", color: "#fff" }}>
-          Assignment Dashboard
+        <Typography variant="h5" style={{ fontWeight: "bold", color: "#fff" }}>
+          Complaint
         </Typography>
-      </Box>
+      </div>
 
-      {/* Tabs */}
-      <Tabs value={tab} onChange={handleTabChange} sx={{ marginBottom: 2 }}>
-        <Tab label="Calendar" />
-        <Tab label="Table" />
-      </Tabs>
-
-      {/* Calendar Tab */}
-      {tab === 0 && (
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={events}
-          eventContent={renderEventContent}
-          height="80vh"
-          eventDisplay="block"
-        />
-      )}
-
-      {/* Table Tab */}
-      {tab === 1 && (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>Assignment No</StyledTableCell>
-                <StyledTableCell>Plan No</StyledTableCell>
-                <StyledTableCell>Description</StyledTableCell>
-                <StyledTableCell>Status</StyledTableCell>
-                <StyledTableCell>Assigned To</StyledTableCell>
-                <StyledTableCell>Assigned By</StyledTableCell>
-                <StyledTableCell>Scheduled Start</StyledTableCell>
-                <StyledTableCell>Scheduled End</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {calendar.map((item) => (
-                <StyledTableRow key={item.assignmentNo}>
-                  <StyledTableCell>{item.assignmentNo}</StyledTableCell>
-                  <StyledTableCell>{item.planNo}</StyledTableCell>
+      {/* Table */}
+      <Box>
+        <Table
+          size="small"
+          style={{ boxShadow: "0px 0px 5px rgba(0, 0, 0, 0.3)" }}
+        >
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>Complaint No</StyledTableCell>
+              <StyledTableCell>Title</StyledTableCell>
+              <StyledTableCell>Description</StyledTableCell>
+              <StyledTableCell>Priority</StyledTableCell>
+              <StyledTableCell>Created At</StyledTableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {complaints && complaints
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row) => (
+                <StyledTableRow key={row.complaintNo}>
+                  <StyledTableCell>{row.complaintNo}</StyledTableCell>
+                  <StyledTableCell>{row.title}</StyledTableCell>
+                  <StyledTableCell>{row.description}</StyledTableCell>
                   <StyledTableCell>
-                    {item.assignmentDescription}
-                  </StyledTableCell>
-                  <StyledTableCell>{item.status}</StyledTableCell>
-                  <StyledTableCell>{item.assignedTo}</StyledTableCell>
-                  <StyledTableCell>{item.assignedBy}</StyledTableCell>
-                  <StyledTableCell>
-                    {new Date(item.scheduledStart).toLocaleString()}
+                    {row.priority === 1
+                      ? "Low"
+                      : row.priority === 2
+                      ? "Medium"
+                      : "High"}
                   </StyledTableCell>
                   <StyledTableCell>
-                    {new Date(item.scheduledEnd).toLocaleString()}
+                    {new Date(row.createdAt).toLocaleString()}
                   </StyledTableCell>
                 </StyledTableRow>
               ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+          </TableBody>
+        </Table>
+
+        {/* Pagination */}
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={complaints.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Box>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

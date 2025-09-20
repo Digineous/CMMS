@@ -20,6 +20,8 @@ import AssignmentCalendar from "../components/Maintenance/AssignmentCalendar";
 import PlanList from "../components/Maintenance/PlanList";
 import MainPointPage from "../components/Maintenance/MainPoint";
 import CheckList from "../components/Maintenance/CheckList";
+import MttrMtbfReportByMachine from "../components/Reports/MttrMtbfByMachine";
+import MTTRMTBFSummaryReport from "../components/Reports/mttrmtdfDetails";
 
 export default function MyRoutes() {
   return (
@@ -46,6 +48,8 @@ export default function MyRoutes() {
       <Route path="/maintenance/plan" element={<PlanList />} />
       <Route path="/maintenance/mainpoint" element={<MainPointPage />} />
       <Route path="/maintenance/checklist" element={<CheckList />} />
+      <Route path="/reports/mttrmtbfdetails" element={<MttrMtbfReportByMachine />} />
+      <Route path="/reports/mttrmtbfbymachine" element={<MTTRMTBFSummaryReport />} />
     </Routes>
   );
 }
