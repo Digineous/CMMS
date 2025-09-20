@@ -18,6 +18,8 @@ import UserMaster from "../components/Administrative/userMaster";
 import WorkOrderValidation from "../components/WorkOrders/WorkOrderValidation";
 import MainPointPage from "../components/Maintenance/MainPoint";
 import CheckOut from "../components/Maintenance/CheckOut";
+import ComplaintsHistory from "../components/Complaints/ComplaintsHistory";
+import WorkOrderHistory from "../components/WorkOrders/WorkOrderHistory";
 
 export default function MyRoutes() {
   return (
@@ -42,6 +44,8 @@ export default function MyRoutes() {
       <Route path="/complaint/validation" element={<WorkOrderValidation />} />
       <Route path="/maintenance/mainpoint" element={<MainPointPage/>}/>
       <Route path="/maintenance/checklist" element={<CheckOut/>}/>
+      <Route path="/complaint/complaintshistory/" element={<ComplaintsHistory/>}/>
+      <Route path="/workorder/workorderhistory/" element={<WorkOrderHistory/>}/>
     </Routes>
   );
 }
