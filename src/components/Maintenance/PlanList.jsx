@@ -32,6 +32,7 @@ import { apiAddPlan } from "../../api/Maintenance/api.AddPlan";
 import { apigetUsers } from "../../api/UserMaster/apiGetUsers";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import { apiAssignPlan } from "../../api/Maintenance/api.assignPlan";
+import { getCheckPoint } from "../../api/Maintenance/CheckList/api.getCheckList";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -61,6 +62,7 @@ const PlanList = () => {
   const [lineList, setLineList] = useState([]);
   const [machineList, setMachineList] = useState([]);
   const [userList, setUserList] = useState([]);
+  const [checkList, setCheckList] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [formData, setFormData] = useState({
     planName: "",
@@ -94,10 +96,25 @@ const PlanList = () => {
     fetchPlant();
     fetchLine();
     fetchMachine();
-    fetchusers();
+    fetchUsers();
+    fetchCheckList();
   }, []);
 
-  const fetchusers = async () => {
+  const fetchCheckList = async () => {
+    try {
+      const response = await getCheckPoint();
+      setCheckList(response.data);
+    } catch (error) {
+      console.error("Error fetching checklist:", error);
+      setSnackbar({
+        open: true,
+        message: "Error fetching checklist.",
+        severity: "error",
+      });
+    }
+  };
+
+  const fetchUsers = async () => {
     try {
       const response = await apigetUsers();
       if (response.data.statusCode === 200) {
@@ -186,6 +203,13 @@ const PlanList = () => {
         severity: "error",
       });
     }
+  };
+
+  const getCheckList = (checklistNo) => {
+    const checklist = checkList.find(
+      (check) => check.checklistNo === checklistNo
+    );
+    return checklist ? checklist.checklistName : "N/A";
   };
 
   const handleSnackbarClose = (event, reason) => {
@@ -309,6 +333,7 @@ const PlanList = () => {
                 <StyledTableCell>Plan No</StyledTableCell>
                 <StyledTableCell>Plan Name</StyledTableCell>
                 <StyledTableCell>Description</StyledTableCell>
+                <StyledTableCell>Checklist</StyledTableCell>
                 <StyledTableCell>Frequency</StyledTableCell>
                 <StyledTableCell>Duration</StyledTableCell>
                 <StyledTableCell>Created At</StyledTableCell>
@@ -324,6 +349,7 @@ const PlanList = () => {
                     <StyledTableCell>{plan.planNo}</StyledTableCell>
                     <StyledTableCell>{plan.planName}</StyledTableCell>
                     <StyledTableCell>{plan.planDescription}</StyledTableCell>
+                    <StyledTableCell>{getCheckList(plan.checklistNo)}</StyledTableCell>
                     <StyledTableCell>
                       {plan.frequencyValue} {plan.frequencyType}
                     </StyledTableCell>
@@ -447,13 +473,20 @@ const PlanList = () => {
               onChange={handleChange}
             />
             <TextField
-              type="number"
+              select
               fullWidth
               label="Checklist No"
               name="checklistNo"
               value={formData.checklistNo}
               onChange={handleChange}
-            />
+            >
+              {checkList &&
+                checkList.map((check) => (
+                  <MenuItem key={check.checklistNo} value={check.checklistNo}>
+                    {check.checklistName}
+                  </MenuItem>
+                ))}
+            </TextField>
             <TextField
               select
               fullWidth
