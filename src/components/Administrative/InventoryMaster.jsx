@@ -142,7 +142,7 @@ const InventoryMaster = () => {
   return (
     <div style={{ padding: "0px 20px" }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", padding: "20px 0" }}>
+      {/* <div style={{ display: "flex", justifyContent: "space-between", padding: "20px 0" }}>
         <h2>Inventory Master</h2>
         <Button
           onClick={() => setAddOpen(true)}
@@ -158,7 +158,52 @@ const InventoryMaster = () => {
         >
           Add New &nbsp;<FontAwesomeIcon icon={faPlus} />
         </Button>
-      </div>
+      </div> */}
+         <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                background: "linear-gradient(to right, rgb(0, 93, 114), rgb(79, 223, 255))",
+                padding: "5px",
+                borderRadius: "8px",
+                marginBottom: "20px",
+                marginTop: '10px',
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                color: "white",
+                justifyContent: 'space-between'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                
+                <Typography
+                  variant="h5"
+                  style={{
+                    fontWeight: "bold",
+                    color: "#fff",
+                  }}
+                >
+                  Inventory Master
+                </Typography>
+              </div>
+              <Button
+                onClick={() => setAddOpen(true)}
+                style={{
+                  fontWeight: "600",
+                  borderRadius: "10px",
+                  color: "white",
+                  border: "4px solid white",
+                  padding: "5px",
+                  background: 'grey'
+                }}
+              >
+                {" "}
+                Add New &nbsp;{" "}
+                <FontAwesomeIcon
+                  style={{ fontSize: "18px", color: "white" }}
+                  icon={faPlus}
+                />
+              </Button>
+            </div>
 
       {/* Table */}
       <TableContainer component={Paper}>

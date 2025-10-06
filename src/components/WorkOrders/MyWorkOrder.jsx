@@ -54,6 +54,10 @@ export default function MyWorkOrderPage() {
 
   const [rowActions, setRowActions] = useState({});
 
+  const isComplaintLocked = (statusId) => {
+    return statusId === 7 || statusId === 8;
+  };
+
   useEffect(() => {
     fetchWorkOrders();
     fetchUsers();
@@ -256,6 +260,7 @@ export default function MyWorkOrderPage() {
                           e.target.value
                         )
                       }
+                      disabled={isComplaintLocked(row.status)}
                       displayEmpty
                       fullWidth
                     >
@@ -277,6 +282,7 @@ export default function MyWorkOrderPage() {
                           e.target.value
                         )
                       }
+                      disabled={isComplaintLocked(row.status)}
                       fullWidth
                     />
                   </StyledTableCell>
@@ -320,8 +326,11 @@ export default function MyWorkOrderPage() {
                   </StyledTableCell> */}
 
                   <StyledTableCell>
-                    <IconButton onClick={() => handleSaveRow(row)}>
-                      <SaveIcon color="success" />
+                    <IconButton onClick={() => handleSaveRow(row)}
+                    color="success"
+                      disabled={isComplaintLocked(row.status)}
+                    >
+                      <SaveIcon  />
                     </IconButton>
                   </StyledTableCell>
                 </StyledTableRow>
