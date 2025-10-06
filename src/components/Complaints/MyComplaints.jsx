@@ -79,8 +79,6 @@ export default function MyComplaintsPage() {
   const [statusList, setStatusList] = useState([]);
   const [userList, setUserList] = useState([]);
 
-
-
   const fetchCompliantsStatus = async () => {
     try {
       const response = await apiGetStatusComplaints();
@@ -98,10 +96,6 @@ export default function MyComplaintsPage() {
       });
     }
   };
-
-
-
-
 
   // Fetch complaints
   const fetchComplaints = async () => {
@@ -178,32 +172,31 @@ export default function MyComplaintsPage() {
     }
   };
 
- const fetchUsers = async () => {
-  try {
-    const response = await apigetUsers(); // your API call
-    if (response?.data?.statusCode === 200) {
-      const allUsers = response.data.data || [];
+  const fetchUsers = async () => {
+    try {
+      const response = await apigetUsers(); // your API call
+      if (response?.data?.statusCode === 200) {
+        const allUsers = response.data.data || [];
 
-      // Filter only Operational Managers (roleId === 2)
-      const operationalManagers = allUsers.filter((u) =>
-        u.roles?.some((role) => role.roleId === 2)
-      );
+        // Filter only Operational Managers (roleId === 2)
+        const operationalManagers = allUsers.filter((u) =>
+          u.roles?.some((role) => role.roleId === 2)
+        );
 
-      setUserList(allUsers);           // keep all for reference (if needed)
-      setUsers(operationalManagers);   // only roleId 2
-    } else {
-      throw new Error("Invalid response");
+        setUserList(allUsers); // keep all for reference (if needed)
+        setUsers(operationalManagers); // only roleId 2
+      } else {
+        throw new Error("Invalid response");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setSnackbar({
+        open: true,
+        message: "Error fetching users.",
+        severity: "error",
+      });
     }
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    setSnackbar({
-      open: true,
-      message: "Error fetching users.",
-      severity: "error",
-    });
-  }
-};
-
+  };
 
   const getUserName = (userId) => {
     const found = userList.find((u) => u.userId === userId);
@@ -253,7 +246,11 @@ export default function MyComplaintsPage() {
     try {
       const response = await apiRaiseComplaint(newComplaint);
       if (response?.data?.statusCode === 200) {
-        setSnackbar({ open: true, message: "Complaint added!", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Complaint added!",
+          severity: "success",
+        });
         await fetchComplaints();
         handleCloseModal();
       }
@@ -331,9 +328,15 @@ export default function MyComplaintsPage() {
                     <StyledTableCell>{row.complaintNo}</StyledTableCell>
                     <StyledTableCell>{row.title}</StyledTableCell>
                     <StyledTableCell>{row.description}</StyledTableCell>
-                    <StyledTableCell>{getStatusName(row.currentStatus)}</StyledTableCell>
-                    <StyledTableCell>{getUserName(row.assignedOperationalManager)}</StyledTableCell>
-                    <StyledTableCell>{getBreakdownReasonName(row.breakdownReasonNo)}</StyledTableCell>
+                    <StyledTableCell>
+                      {getStatusName(row.currentStatus)}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {getUserName(row.assignedOperationalManager)}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {getBreakdownReasonName(row.breakdownReasonNo)}
+                    </StyledTableCell>
                     <StyledTableCell>
                       {new Date(row.createdAt).toLocaleString()}
                     </StyledTableCell>
@@ -472,12 +475,12 @@ export default function MyComplaintsPage() {
             value={newComplaint.assignedOperationalManager}
             onChange={handleInputChange}
           >
-            {users && users.map((row) => (
-              <MenuItem key={row.userId} value={row.userId} >
-                {row.firstName} {row.lastName}
-              </MenuItem>
-            ))
-            }
+            {users &&
+              users.map((row) => (
+                <MenuItem key={row.userId} value={row.userId}>
+                  {row.firstName} {row.lastName}
+                </MenuItem>
+              ))}
           </TextField>
         </DialogContent>
         <DialogActions>

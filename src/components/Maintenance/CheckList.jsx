@@ -21,8 +21,8 @@ import {
     MenuItem,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { getCheckPoint } from "../../api/Maintenance/CheckPoint/api.getCheckPoint";
-import { addCheckPoint } from "../../api/Maintenance/CheckPoint/api.addCheckPoint";
+import { getCheckPoint } from "../../api/Maintenance/CheckList/api.getCheckList";
+import { addCheckPoint } from "../../api/Maintenance/CheckList/api.addCheckList";
 import { apiGetMainPoint } from "../../api/Maintenance/MainPoint/api.getMainPoint";
 
 // Styled Table
@@ -46,7 +46,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     },
 }));
 
-export default function CheckOut() {
+export default function CheckList() {
     const [checkouts, setCheckouts] = useState([]);
     const [mainPoints, setMainPoints] = useState([]);
     const [page, setPage] = useState(0);
