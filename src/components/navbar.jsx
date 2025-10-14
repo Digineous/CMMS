@@ -35,6 +35,7 @@ function NavBar() {
   const [method2Open, setMethod2Open] = useState(false);
   const [method1Open, setMethod1Open] = useState(false);
   const [emsReportOpen, setEmsReportOpen] = useState(false);
+  const [requestsOpen, setRequestsOpen] = useState(false);
   const [state, setState] = React.useState({
     right: false,
   });
@@ -274,6 +275,8 @@ function NavBar() {
         label: "Check List",
         group: "maintenance",
       },
+      // Requests
+      { path: "/requests/all", label: "All Requests", group: "requests" },
       // Masters
       {
         path: "/administrative/plantmaster",
@@ -345,6 +348,8 @@ function NavBar() {
         label: "Assignment Calendar",
         group: "maintenance",
       },
+      // Requests
+      { path: "/requests/my", label: "My Requests", group: "requests" },
       // Masters
       // {
       //   path: "/administrative/plantmaster",
@@ -437,10 +442,10 @@ function NavBar() {
     };
   }, []);
 
-const handleLogout = () => {
-  localStorage.clear();
-  navigate("/login");
-};
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
 
   const toggleDrawer = (open) => (event) => {
     if (
@@ -646,7 +651,57 @@ const handleLogout = () => {
               </Collapse>
             </>
           )}
+          {/* Requests (role-based) */}
+          {roleMenus[roleId]?.some((m) => m.group === "requests") && (
+            <>
+              <ListItem
+                button
+                onClick={() => setRequestsOpen(!requestsOpen)}
+                sx={{
+                  cursor: "pointer",
+                  marginBottom: "20px",
+                  bgcolor: location.pathname.startsWith("/requests")
+                    ? darken("#1faec5", 0.2)
+                    : "background.paper",
+                  borderRadius: 2,
+                  padding: 1.5,
+                }}
+              >
+                <ListItemIcon>
+                  <InboxIcon />
+                </ListItemIcon>
+                <ListItemText primary="Spare Requests" />
+                {requestsOpen ? <ExpandLess /> : <ExpandMore />}
+              </ListItem>
 
+              <Collapse in={requestsOpen} timeout="auto" unmountOnExit>
+                <List sx={{ pl: 2 }}>
+                  {roleMenus[roleId]
+                    .filter((m) => m.group === "requests")
+                    .map((item) => (
+                      <ListItem
+                        key={item.path}
+                        button
+                        component={Link}
+                        to={item.path}
+                        sx={{
+                          cursor: "pointer",
+                          marginBottom: "15px",
+                          bgcolor:
+                            location.pathname === item.path
+                              ? darken("#1faec5", 0.2)
+                              : "background.paper",
+                          borderRadius: 2,
+                          padding: 1.2,
+                        }}
+                      >
+                        <ListItemText primary={item.label} />
+                      </ListItem>
+                    ))}
+                </List>
+              </Collapse>
+            </>
+          )}
 
           {/* Reports (role-based) */}
           {roleMenus[roleId]?.some((m) => m.group === "reports") && (

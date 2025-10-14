@@ -17,6 +17,15 @@ import Profile from "../components/Profile";
 import UserMaster from "../components/Administrative/userMaster";
 import WorkOrderValidation from "../components/WorkOrders/WorkOrderValidation";
 import WorkOrderHistory from "../components/WorkOrders/WorkOrderHistory";
+import AssignmentCalendar from "../components/Maintenance/AssignmentCalendar";
+import PlanList from "../components/Maintenance/PlanList";
+import MainPointPage from "../components/Maintenance/MainPoint";
+import CheckList from "../components/Maintenance/CheckList";
+import MttrMtbfReportByMachine from "../components/Reports/MttrMtbfByMachine";
+import MTTRMTBFSummaryReport from "../components/Reports/mttrmtdfDetails";
+import ComplaintsHistory from "../components/Complaints/ComplaintsHistory";
+import MyRequests from "../components/SpareRequest/MyRequests";
+import AllRequests from "../components/SpareRequest/AllRequests";
 
 export default function MyRoutes() {
   return (
@@ -62,6 +71,8 @@ export default function MyRoutes() {
         path="/reports/complaintshistory"
         element={<ComplaintsHistory />}
       />
+      <Route path="/requests/my" element={<MyRequests />} />
+      <Route path="/requests/all" element={<AllRequests />} />
     </Routes>
   );
 }
