@@ -1,428 +1,551 @@
 import React, { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import {
   Typography,
-  Tabs,
-  Tab,
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TableContainer,
-  Paper,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
+  TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  TextField,
+  OutlinedInput,
+  Checkbox,
+  ListItemText,
+  Fab,
+  Snackbar,
+  Alert,
+  CircularProgress,
+  Box,
+  IconButton,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
-import { tableCellClasses } from "@mui/material/TableCell";
-import { apiGetAssignmentTechnician } from "../../api/Maintenance/api.getAssignmentTechnician";
-import { apigetUsers } from "../../api/UserMaster/apiGetUsers";
-import { apigetPlanList } from "../../api/Maintenance/api.GetPlanList";
-import EditIcon from "@mui/icons-material/Edit";
-import { apiUpdateAssignment } from "../../api/Maintenance/api.updateAssignment";
-import { apiGetAssignedPlan } from "../../api/Maintenance/api.getAssginedPlan";
+import AddIcon from "@mui/icons-material/Add";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
-// Styled Table Cells
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    backgroundColor: "#1FAEC5",
-    color: theme.palette.common.white,
-    fontWeight: "bold",
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
-  },
-}));
+import { apiCalenderEvent } from "../../api/Maintenance/api.CalenderEvent";
+import { apigetMachine } from "../../api/MachineMaster/apigetmachine";
+import { getCheckPoint } from "../../api/Maintenance/CheckList/api.getCheckList";
+import { apiGenerateOccurrences } from "../../api/Maintenance/api.generateOccurances";
+import { apiOccurrenceDetails } from "../../api/Maintenance/api.occurrenceDetails";
+import { apiCheckChecklist } from "../../api/Maintenance/api.checkChecklist";
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  "&:nth-of-type(odd)": {
-    backgroundColor: theme.palette.action.hover,
-  },
-  "&:last-child td, &:last-child th": {
-    border: 0,
-  },
-}));
+export default function MaintenanceCalendar() {
+  const roleId = localStorage.getItem("roleId");
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [machines, setMachines] = useState([]);
+  const [machineMap, setMachineMap] = useState({});
+  const [checklists, setChecklists] = useState([]);
 
-export default function AssignmentCalendar() {
-  const [openDialog, setOpenDialog] = useState(false);
-  const [events, setEvents] = useState([]);
-  const [calendar, setCalendar] = useState([]);
-  const [tab, setTab] = useState(0);
-  const [userList, setUserList] = useState([]);
-  const [planList, setPlanList] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [openAdd, setOpenAdd] = useState(false);
+  const [selectedMachine, setSelectedMachine] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [selectedChecklistNos, setSelectedChecklistNos] = useState([]);
+  const [loadingAdd, setLoadingAdd] = useState(false);
+  const [openDetails, setOpenDetails] = useState(false);
+  const [occDetails, setOccDetails] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
+
+  const [visibleRange, setVisibleRange] = useState({ start: null, end: null });
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
-    severity: "info",
+    severity: "success",
   });
-  const [selectedAssignment, setSelectedAssignment] = useState(null);
-  const [status, setStatus] = useState("InProgress");
-  const [processDescription, setProcessDescription] = useState(
-    "Assignments InProgress"
-  );
-  const [selectedAssignmentId, setSelectedAssignmentId] = useState(null);
-  const role = Number(localStorage.getItem("roleId"));
 
-  const handleTabChange = (event, newValue) => setTab(newValue);
+  const [loadingCalendar, setLoadingCalendar] = useState(false);
 
-  const fetchAssignments = async () => {
-    // Read roleId fresh
-    const roleIdStr = localStorage.getItem("roleId");
-    const roleId = Number(roleIdStr);
-    const api = roleId === 4 ? apiGetAssignedPlan : apiGetAssignmentTechnician;
-
-    try {
-      const response = await api();
-      if (response?.data?.statusCode === 200) {
-        const assignments = response.data.data || [];
-        setCalendar(assignments);
-
-        const mappedEvents = assignments.map((item) => {
-          const today = new Date();
-          const startDate = new Date(item.scheduledStart);
-          const endDate = new Date(item.scheduledEnd);
-
-          let backgroundColor = "rgba(0, 128, 0, 0.3)";
-          if (endDate < today) backgroundColor = "rgba(255, 0, 0, 0.3)";
-          else if (startDate <= today && endDate >= today)
-            backgroundColor = "rgba(255, 255, 0, 0.3)";
-
-          return {
-            id: item.assignmentNo,
-            title: item.assignmentDescription,
-            start: item.scheduledStart,
-            end: item.scheduledEnd,
-            backgroundColor,
-            borderColor: backgroundColor,
-            extendedProps: item,
-          };
-        });
-
-        setEvents(mappedEvents);
-      } else {
-        setCalendar([]);
-        setEvents([]);
-      }
-    } catch (error) {
-      console.error("Error fetching assignments:", error);
-      setCalendar([]);
-      setEvents([]);
-    }
-  };
+  const cleanDate = (str) => (str ? str.split("T")[0] : null);
 
   useEffect(() => {
-    fetchUsers();
-    fetchPlans();
-    fetchAssignments();
+    fetchMachines();
+    fetchCheckLists();
   }, []);
 
-  const fetchPlans = async () => {
+  // ---------------------------
+  // FETCH MACHINES (ASYNC/AWAIT)
+  // ---------------------------
+  const fetchMachines = async () => {
     try {
-      const response = await apigetPlanList();
-      if (response.data.statusCode === 200) {
-        setPlanList(response.data.data || []);
+      const res = await apigetMachine();
+
+      if (res?.data?.statusCode === 200) {
+        const machineList = res.data.data || [];
+        setMachines(machineList);
+
+        const map = {};
+        machineList.forEach((m) => (map[m.machineNo] = m));
+        setMachineMap(map);
       }
-    } catch (error) {
-      console.error("Error fetching plans:", error);
+    } catch (err) {
+      console.error("Error fetching machines:", err);
       setSnackbar({
         open: true,
-        message: "Error fetching plans.",
+        message: "Failed to load machines",
         severity: "error",
       });
     }
   };
 
-  const fetchUsers = async () => {
+  // ---------------------------
+  // FETCH CHECKLISTS (ASYNC/AWAIT)
+  // ---------------------------
+  const fetchCheckLists = async () => {
+    console.log("Role Id: ", roleId);
+    if (!roleId) return;
     try {
-      const response = await apigetUsers(); // your API call
-      if (response?.data?.statusCode === 200) {
-        const allUsers = response.data.data || [];
+      const res = await getCheckPoint();
 
-        // Filter only Operational Managers (roleId === 2)
-        const operationalManagers = allUsers.filter((u) =>
-          u.roles?.some((role) => role.roleId === 2)
-        );
-
-        setUserList(allUsers); // keep all for reference (if needed)
-        setUsers(operationalManagers); // only roleId 2
-      } else {
-        throw new Error("Invalid response");
+      if (res?.statusCode === 200) {
+        setChecklists(res.data);
       }
-    } catch (error) {
-      console.error("Error fetching users:", error);
+    } catch (err) {
+      console.error("Error fetching checklists:", err);
       setSnackbar({
         open: true,
-        message: "Error fetching users.",
+        message: "Failed to load checklists",
         severity: "error",
       });
     }
   };
 
-  const renderEventContent = (eventInfo) => {
-    const data = eventInfo.event.extendedProps;
+  // ---------------------------
+  // FETCH CALENDAR EVENTS (ASYNC/AWAIT)
+  // ---------------------------
+  const fetchCalendarEvents = async (start, end) => {
+    if (!start || !end) return;
 
-    // Find planName from planList
-    const plan = planList.find((p) => p.planNo === data.planNo);
-    const planName = plan ? plan.planName : "N/A";
+    setLoadingCalendar(true);
 
-    const tooltip = `
-PlanNo: ${data.planNo}
-PlanName: ${planName}
-AssignedTo: ${getUserName(data.assignedTo)}
-AssignedBy: ${getUserName(data.assignedBy)}
-Status: ${data.processDescription || "N/A"}
-CreatedAt: ${new Date(data.createdAt).toLocaleString()}
-  `;
+    try {
+      const res = await apiCalenderEvent(start, end);
+      const items = res?.data?.data || [];
+
+      const mapped = items.map((item) => {
+        const machine = machineMap[item.machine_no];
+
+        const displayName =
+          (machine &&
+            (machine.displayMachineName || machine.machineName)) ||
+          `Machine ${item.machine_no}`;
+
+        return {
+          id: `occ-${item.occurrence_id}`,
+          title: displayName,
+          start: item.scheduled_for,
+          allDay: true,
+          backgroundColor:
+            item.status === "completed"
+              ? "rgba(0, 200, 0, 0.4)"
+              : "rgba(0, 102, 255, 0.4)",
+          borderColor:
+            item.status === "completed"
+              ? "rgba(0, 150, 0, 0.8)"
+              : "rgba(0, 102, 255, 0.8)",
+          textColor: "#000",
+          extendedProps: {
+            ...item,
+            displayName,
+            line: machine?.lineName || "",
+            plant: machine?.plantName || "",
+            cycle: machine?.cycleTime || "",
+            prod: machine?.lineProductionCount || "",
+            machineDetails: machine || null,
+          },
+        };
+      });
+
+      setCalendarEvents(mapped);
+    } catch (err) {
+      console.error("Error fetching calendar:", err);
+      setSnackbar({
+        open: true,
+        message: "Failed to fetch calendar events",
+        severity: "error",
+      });
+    } finally {
+      setLoadingCalendar(false);
+    }
+  };
+
+  // ---------------------------
+  // ADD OCCURRENCES (ASYNC/AWAIT)
+  // ---------------------------
+  const handleAddOccurrence = async () => {
+    if (!selectedMachine)
+      return setSnackbar({
+        open: true,
+        message: "Please select a machine",
+        severity: "warning",
+      });
+
+    if (!startDate || !endDate)
+      return setSnackbar({
+        open: true,
+        message: "Please select start & end dates",
+        severity: "warning",
+      });
+
+    if (endDate < startDate)
+      return setSnackbar({
+        open: true,
+        message: "End date must be same or after start",
+        severity: "warning",
+      });
+
+    const payload = {
+      planNo: Number(selectedMachine),
+      startDate,
+      endDate,
+      checklistNos: selectedChecklistNos.map(Number),
+    };
+
+    setLoadingAdd(true);
+
+    try {
+      const res = await apiGenerateOccurrences(payload);
+
+      setSnackbar({
+        open: true,
+        message: "Occurrences generated",
+        severity: "success",
+      });
+
+      setOpenAdd(false);
+      setSelectedMachine("");
+      setStartDate("");
+      setEndDate("");
+      setSelectedChecklistNos([]);
+
+      const startToUse = visibleRange.start || startDate;
+      const endToUse = visibleRange.end || endDate;
+
+      await fetchCalendarEvents(startToUse, endToUse);
+    } catch (err) {
+      console.error("Error generating occurrences:", err);
+      setSnackbar({
+        open: true,
+        message:
+          err?.response?.data?.message || "Failed to generate occurrences",
+        severity: "error",
+      });
+    } finally {
+      setLoadingAdd(false);
+    }
+  };
+
+  const handleOpenDetails = async (occId) => {
+    setLoadingDetails(true);
+    setOpenDetails(true);
+
+    try {
+      const res = await apiOccurrenceDetails(occId);
+
+      if (res?.data?.statusCode === 200) {
+        const occ = res.data.data;
+
+        // attach display name
+        const machine = machineMap[occ.machine_no];
+        occ.machineName = machine
+          ? machine.displayMachineName || machine.machineName
+          : `Machine ${occ.machine_no}`;
+
+        setOccDetails(occ);
+
+      }
+    } catch (err) {
+      console.error("Error fetching occurrence details:", err);
+      setSnackbar({
+        open: true,
+        message: "Failed to load occurrence details",
+        severity: "error",
+      });
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleMarkChecked = async (checkId) => {
+    try {
+      await apiCheckChecklist(checkId);
+      setSnackbar({
+        open: true,
+        message: "Checklist item marked as checked",
+        severity: "success",
+      });
+
+      // Re-fetch occurrence details after marking checked
+      await handleOpenDetails(occDetails.occurrence_id);
+
+    } catch (err) {
+      console.error(err);
+      setSnackbar({
+        open: true,
+        message: "Failed to update checklist status",
+        severity: "error",
+      });
+    }
+  };
+
+  const renderEventTitle = (event) => {
+    const d = event.extendedProps;
 
     return (
       <div
-        style={{
-          fontSize: "11px",
-          lineHeight: "1.2em",
-          backgroundColor: eventInfo.event.backgroundColor,
-          padding: "2px 4px",
-          borderRadius: "4px",
-          color: "#000",
-        }}
-        title={tooltip}
+        style={{ fontSize: "11px", padding: "2px", color: "#000" }}
+        title={`Machine: ${d.displayName}\nLine: ${d.line}\nStatus: ${d.status}`}
       >
-        <b>{data.assignmentDescription}</b> <br />
-        Plan: {planName} <br />
-        Status: {data.status}
+        <b>{d.displayName}</b>
+        <br />
+        {d.status}
       </div>
     );
   };
 
-  const handleOpenDialog = (assignment) => {
-    setSelectedAssignmentId(assignment.assignmentNo);
-    setSelectedAssignment(assignment);
-    setStatus(assignment?.status || "");
-    setProcessDescription(assignment?.processDescription || "");
-    setOpenDialog(true);
-  };
-
-  const handleCloseDialog = () => setOpenDialog(false);
-
-  const handleSubmit = async () => {
-    const payload = {
-      status,
-      processDescription,
-    };
-    try {
-      const response = await apiUpdateAssignment(selectedAssignmentId, payload);
-      if (response.data.statusCode === 200) {
-        setSnackbar({
-          open: true,
-          message: "Assignment updated successfully.",
-          severity: "success",
-        });
-        fetchAssignments(); // Refresh assignments
-      }
-    } catch (error) {
-      console.error("Error updating assignment:", error);
-      setSnackbar({
-        open: true,
-        message: "Error updating assignment.",
-        severity: "error",
-      });
-    }
-    setOpenDialog(false);
-  };
-
-  const getUserName = (userId) => {
-    const found = userList.find((u) => u.userId === userId);
-    if (!found) return userId; // fallback to ID if not found
-    return `${found.firstName} ${found.lastName || ""}`.trim();
-  };
-
   return (
-    <div style={{ padding: "0px 20px" }}>
-      {/* Gradient Header */}
+    <div style={{ padding: "0px 20px", position: "relative" }}>
+      {/* Header */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           background:
             "linear-gradient(to right, rgb(0, 93, 114), rgb(79, 223, 255))",
-          padding: "5px",
+          padding: "8px",
           borderRadius: "8px",
           marginBottom: "10px",
           marginTop: "10px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
           color: "white",
           justifyContent: "space-between",
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: "bold", color: "#fff" }}>
-          Assignment Dashboard
+        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+          Maintenance Calendar
         </Typography>
 
-        <Tabs
-          value={tab}
-          onChange={handleTabChange}
-          sx={{
-            minHeight: 24, // smaller overall height
-            margin: 1,
-            "& .MuiTabs-indicator": { backgroundColor: "transparent" },
-          }}
-        >
-          <Tab
-            label="Calendar"
-            sx={{
-              minHeight: 24,
-              color: "#fff",
-              backgroundColor: "transparent",
-              fontWeight: "bold",
-              fontSize: "0.75rem", // smaller text
-              padding: "4px 8px", // reduce padding
-              "&.Mui-selected": {
-                color: "#000",
-                backgroundColor: "#fff",
-                borderRadius: "4px",
-              },
-            }}
-          />
-          <Tab
-            label="Table"
-            sx={{
-              minHeight: 24,
-              color: "#fff",
-              backgroundColor: "transparent",
-              fontWeight: "bold",
-              fontSize: "0.75rem",
-              padding: "4px 8px",
-              "&.Mui-selected": {
-                color: "#000",
-                backgroundColor: "#fff",
-                borderRadius: "4px",
-              },
-            }}
-          />
-        </Tabs>
+        <Fab size="small" color="primary" onClick={() => setOpenAdd(true)}>
+          <AddIcon />
+        </Fab>
       </div>
 
-      {/* Tab content */}
-      {tab === 0 && (
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={events}
-          eventContent={renderEventContent}
-          height="80vh"
-        />
-      )}
-
-      {tab === 1 && (
-        <Box>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell>Assignment No</StyledTableCell>
-                  <StyledTableCell>Plan Name</StyledTableCell>
-                  <StyledTableCell>Description</StyledTableCell>
-                  <StyledTableCell>Status</StyledTableCell>
-                  <StyledTableCell>Assigned To</StyledTableCell>
-                  <StyledTableCell>Assigned By</StyledTableCell>
-                  <StyledTableCell>Scheduled Start</StyledTableCell>
-                  <StyledTableCell>Scheduled End</StyledTableCell>
-                  {role === 5 && <StyledTableCell>Action</StyledTableCell>}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {calendar.map((item) => {
-                  // Find planName from planList
-                  const plan = planList.find((p) => p.planNo === item.planNo);
-                  const planName = plan ? plan.planName : "N/A";
-
-                  return (
-                    <StyledTableRow key={item.assignmentNo}>
-                      <StyledTableCell>{item.assignmentNo}</StyledTableCell>
-                      <StyledTableCell>{planName}</StyledTableCell>{" "}
-                      {/* show planName */}
-                      <StyledTableCell>
-                        {item.assignmentDescription}
-                      </StyledTableCell>
-                      <StyledTableCell>{item.status}</StyledTableCell>
-                      <StyledTableCell>
-                        {getUserName(item.assignedTo)}
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        {getUserName(item.assignedBy)}
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        {new Date(item.scheduledStart).toLocaleString()}
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        {new Date(item.scheduledEnd).toLocaleString()}
-                      </StyledTableCell>
-                      {role === 5 && (
-                        <StyledTableCell>
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleOpenDialog(item)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </StyledTableCell>
-                      )}
-                    </StyledTableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          <Dialog open={openDialog} onClose={handleCloseDialog}>
-            <DialogTitle>Update Progress</DialogTitle>
-            <DialogContent
-              sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
-            >
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  label="Status"
-                >
-                  <MenuItem value="InProgress">InProgress</MenuItem>
-                  <MenuItem value="PartiallyClosed">Partially Closed</MenuItem>
-                  <MenuItem value="Closed">Closed</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField
-                label="Description"
-                multiline
-                rows={3}
-                fullWidth
-                value={processDescription}
-                onChange={(e) => setProcessDescription(e.target.value)}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog}>Cancel</Button>
-              <Button onClick={handleSubmit} variant="contained">
-                Submit
-              </Button>
-            </DialogActions>
-          </Dialog>
+      {loadingCalendar && (
+        <Box
+          sx={{
+            position: "absolute",
+            left: "50%",
+            top: "30%",
+            transform: "translate(-50%, -30%)",
+            zIndex: 50,
+          }}
+        >
+          <CircularProgress />
         </Box>
       )}
+
+      {/* CALENDAR */}
+      <FullCalendar
+        plugins={[dayGridPlugin, interactionPlugin]}
+        initialView="dayGridMonth"
+        events={calendarEvents}
+        height="80vh"
+        datesSet={(info) => {
+          const start = cleanDate(info.startStr);
+          const end = cleanDate(info.endStr);
+
+          setVisibleRange({ start, end });
+          fetchCalendarEvents(start, end);
+        }}
+        eventClick={async (info) => {
+          const occId = info.event.extendedProps.occurrence_id;
+          await handleOpenDetails(occId);
+        }}
+        eventContent={(info) => renderEventTitle(info.event)}
+      />
+
+      {/* ADD OCCURRENCE DIALOG */}
+      <Dialog open={openAdd} onClose={() => setOpenAdd(false)} fullWidth>
+        <DialogTitle>Add Maintenance Occurrence</DialogTitle>
+
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {/* MACHINE */}
+          <FormControl fullWidth>
+            <InputLabel>Machine</InputLabel>
+            <Select
+              value={selectedMachine}
+              label="Machine"
+              onChange={(e) => setSelectedMachine(e.target.value)}
+            >
+              <MenuItem value="">
+                <em>Select machine</em>
+              </MenuItem>
+              {machines.map((m) => (
+                <MenuItem key={m.machineNo} value={m.machineNo}>
+                  {m.displayMachineName || m.machineName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* DATES */}
+          <TextField
+            label="Start Date"
+            type="date"
+            value={startDate}
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+
+          <TextField
+            label="End Date"
+            type="date"
+            value={endDate}
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+
+          {/* CHECKLISTS */}
+          <FormControl fullWidth>
+            <InputLabel>Checklist (optional)</InputLabel>
+            <Select
+              multiple
+              value={selectedChecklistNos}
+              onChange={(e) => setSelectedChecklistNos(e.target.value)}
+              input={<OutlinedInput label="Checklist (optional)" />}
+              renderValue={(selected) =>
+                selected
+                  .map((id) => {
+                    const cl = checklists.find((c) => c.checklistNo === id);
+                    return cl ? cl.checklistName : id;
+                  })
+                  .join(", ")
+              }
+
+            >
+              {checklists.map((cl) => (
+                <MenuItem key={cl.checklistNo} value={cl.checklistNo}>
+                  <Checkbox
+                    checked={selectedChecklistNos.includes(cl.checklistNo)}
+                  />
+                  <ListItemText
+                    primary={cl.checklistName}
+                    secondary={cl.checklistDescription}
+                  />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setOpenAdd(false)} disabled={loadingAdd}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleAddOccurrence}
+            disabled={loadingAdd}
+          >
+            {loadingAdd ? <CircularProgress size={20} /> : "Save"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openDetails} onClose={() => setOpenDetails(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Maintenance Occurrence Details</DialogTitle>
+
+        <DialogContent>
+          {loadingDetails ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : occDetails ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <Typography><b>Machine:</b> {occDetails.machineName}</Typography>
+              <Typography>
+                <b>Scheduled For:</b> {occDetails.scheduled_for?.split("T")[0]}
+              </Typography>
+              <Typography><b>Status:</b> {occDetails.status.toUpperCase()}</Typography>
+
+              <Typography sx={{ mt: 2, mb: 1, fontWeight: "bold" }}>
+                Checklist:
+              </Typography>
+
+              <Box sx={{ mt: 1 }}>
+                {occDetails.checklist?.length === 0 && (
+                  <Typography>No checklist items.</Typography>
+                )}
+
+                {occDetails.checklist?.map((cl) => (
+                  <Box
+                    key={cl.id}
+                    sx={{
+                      padding: "10px",
+                      border: "1px solid #ccc",
+                      borderRadius: "6px",
+                      mb: 1,
+                      background: cl.checked ? "#d6ffd6" : "#ffe0e0",
+                      position: "relative",
+                    }}
+                  >
+                    {/* CHECK BUTTON - TOP RIGHT */}
+                    {roleId === "5" && !cl.checked && (
+                      <IconButton
+                        size="small"
+                        onClick={() => handleMarkChecked(cl.id)}
+                        sx={{
+                          position: "absolute",
+                          bottom: 5,
+                          right: 5,
+                          color: "grey",
+                        }}
+                      >
+                        <CheckCircleIcon />
+                      </IconButton>
+                    )}
+
+                    <Typography>
+                      <b>Check Point Name:</b> {cl.point_name}
+                    </Typography>
+
+                    <Typography>
+                      <b>Checked:</b> {cl.checked ? "Yes" : "No"}
+                    </Typography>
+                  </Box>
+                ))}
+
+              </Box>
+
+            </div>
+          ) : (
+            <Typography>No details found.</Typography>
+          )}
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setOpenDetails(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* SNACKBAR */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }
