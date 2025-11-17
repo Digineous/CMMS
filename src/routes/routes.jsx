@@ -16,14 +16,16 @@ import InventoryMaster from "../components/Administrative/InventoryMaster";
 import Profile from "../components/Profile";
 import UserMaster from "../components/Administrative/userMaster";
 import WorkOrderValidation from "../components/WorkOrders/WorkOrderValidation";
+import WorkOrderHistory from "../components/WorkOrders/WorkOrderHistory";
 import AssignmentCalendar from "../components/Maintenance/AssignmentCalendar";
 import PlanList from "../components/Maintenance/PlanList";
 import MainPointPage from "../components/Maintenance/MainPoint";
-import ComplaintsHistory from "../components/Complaints/ComplaintsHistory";
 import CheckList from "../components/Maintenance/CheckList";
 import MttrMtbfReportByMachine from "../components/Reports/MttrMtbfByMachine";
 import MTTRMTBFSummaryReport from "../components/Reports/mttrmtdfDetails";
-import WorkOrderHistory from "../components/WorkOrders/WorkOrderHistory";
+import ComplaintsHistory from "../components/Complaints/ComplaintsHistory";
+import MyRequests from "../components/SpareRequest/MyRequests";
+import AllRequests from "../components/SpareRequest/AllRequests";
 
 export default function MyRoutes() {
   return (
@@ -53,6 +55,9 @@ export default function MyRoutes() {
       <Route path="/maintenance/plan" element={<PlanList />} />
       <Route path="/maintenance/mainpoint" element={<MainPointPage />} />
       <Route path="/maintenance/checklist" element={<CheckList />} />
+      <Route path="/reports/mttrmtbfdetails" element={<MttrMtbfReportByMachine />} />
+      <Route path="/reports/mttrmtbfbymachine" element={<MTTRMTBFSummaryReport />} />
+
       <Route
         path="/reports/mttrmtbfdetails"
         element={<MttrMtbfReportByMachine />}
@@ -66,6 +71,8 @@ export default function MyRoutes() {
         path="/reports/complaintshistory"
         element={<ComplaintsHistory />}
       />
+      <Route path="/requests/my" element={<MyRequests />} />
+      <Route path="/requests/all" element={<AllRequests />} />
     </Routes>
   );
 }
