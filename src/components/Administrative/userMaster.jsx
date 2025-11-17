@@ -51,7 +51,7 @@ export default function UserMaster() {
   const [userData, setUserData] = useState([]);
   const [role, setRole] = useState([]);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
