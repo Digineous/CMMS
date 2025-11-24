@@ -1,551 +1,554 @@
+// AssignmentCalendar.jsx
 import React, { useState, useEffect } from "react";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
 import {
+  Box,
   Typography,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
+  CircularProgress,
   MenuItem,
-  OutlinedInput,
+  FormControl,
+  Select,
+  InputLabel,
+  TextField,
   Checkbox,
   ListItemText,
-  Fab,
-  Snackbar,
-  Alert,
-  CircularProgress,
-  Box,
-  IconButton,
+  FormControlLabel,
+  Stack,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
-import { apiCalenderEvent } from "../../api/Maintenance/api.CalenderEvent";
+import {
+  Assignment,
+  CalendarMonth,
+  Info,
+  AddCircle,
+  CheckCircle,
+  RadioButtonUnchecked,
+} from "@mui/icons-material";
+
 import { apigetMachine } from "../../api/MachineMaster/apigetmachine";
+import { apiGetPlansByMachine } from "../../api/Maintenance/api.GetPlansByMachine";
+import { apiGetPlanDetails } from "../../api/Maintenance/api.GetPlanDetails";
 import { getCheckPoint } from "../../api/Maintenance/CheckList/api.getCheckList";
-import { apiGenerateOccurrences } from "../../api/Maintenance/api.generateOccurances";
-import { apiOccurrenceDetails } from "../../api/Maintenance/api.occurrenceDetails";
-import { apiCheckChecklist } from "../../api/Maintenance/api.checkChecklist";
+import { apiCreatePlanForAllMachines } from "../../api/Maintenance/api.CreatePlanForAllMachines";
+import { apiUpdatePlanStatus } from "../../api/Maintenance/api.UpdatePlanStatus";
 
-export default function MaintenanceCalendar() {
-  const roleId = localStorage.getItem("roleId");
-  const [calendarEvents, setCalendarEvents] = useState([]);
+// Helper: format ISO date to YYYY-MM-DD (safe)
+const fmtDate = (iso) => {
+  if (!iso) return "";
+  try {
+    return iso.split("T")[0];
+  } catch {
+    return iso;
+  }
+};
+
+export default function AssignmentCalendar() {
   const [machines, setMachines] = useState([]);
   const [machineMap, setMachineMap] = useState({});
-  const [checklists, setChecklists] = useState([]);
+  const [plans, setPlans] = useState({});
+  const [dates, setDates] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [checklist, setChecklist] = useState([]);
 
-  const [openAdd, setOpenAdd] = useState(false);
-  const [selectedMachine, setSelectedMachine] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [selectedChecklistNos, setSelectedChecklistNos] = useState([]);
-  const [loadingAdd, setLoadingAdd] = useState(false);
+  // month/year pickers
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  // details dialog
   const [openDetails, setOpenDetails] = useState(false);
-  const [occDetails, setOccDetails] = useState(null);
-  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
+  // add plan
+  const [openAdd, setOpenAdd] = useState(false);
+  const [addStartDate, setAddStartDate] = useState("");
+  const [addChecklists, setAddChecklists] = useState([]);
+  const [addPlanName, setAddPlanName] = useState("");
+  const [addPlanDescription, setAddPlanDescription] = useState("");
 
-  const [visibleRange, setVisibleRange] = useState({ start: null, end: null });
+  // update status UI inside details
+  const [updateStatus, setUpdateStatus] = useState("");
+  const [updateCompletedChecklists, setUpdateCompletedChecklists] = useState([]);
+  const [updateRemarks, setUpdateRemarks] = useState("");
+  const [updating, setUpdating] = useState(false);
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
-  const [loadingCalendar, setLoadingCalendar] = useState(false);
-
-  const cleanDate = (str) => (str ? str.split("T")[0] : null);
-
+  // initial load
   useEffect(() => {
-    fetchMachines();
-    fetchCheckLists();
+    loadMachinesAndPlans();
+    fetchChecklist();
   }, []);
 
-  // ---------------------------
-  // FETCH MACHINES (ASYNC/AWAIT)
-  // ---------------------------
-  const fetchMachines = async () => {
+  useEffect(() => {
+    generateMonth(selectedYear, selectedMonth);
+  }, [selectedYear, selectedMonth]);
+
+  // generate date objects for selected month
+  const generateMonth = (year, month) => {
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0);
+    const arr = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      arr.push(new Date(d));
+    }
+    setDates(arr);
+  };
+
+  // load machines + plans grouped by machineNo
+  const loadMachinesAndPlans = async () => {
+    setLoading(true);
     try {
-      const res = await apigetMachine();
+      const m = await apigetMachine();
+      let machineList = m?.data?.data || [];
 
-      if (res?.data?.statusCode === 200) {
-        const machineList = res.data.data || [];
-        setMachines(machineList);
+      // ✅ ORDER MACHINES BY MACHINE NO
+      machineList = machineList.sort((a, b) => a.machineNo - b.machineNo);
 
-        const map = {};
-        machineList.forEach((m) => (map[m.machineNo] = m));
-        setMachineMap(map);
-      }
-    } catch (err) {
-      console.error("Error fetching machines:", err);
-      setSnackbar({
-        open: true,
-        message: "Failed to load machines",
-        severity: "error",
+      setMachines(machineList);
+
+      const mMap = {};
+      machineList.forEach((mc) => (mMap[mc.machineNo] = mc));
+      setMachineMap(mMap);
+
+      const p = await apiGetPlansByMachine();
+      const planList = p?.data?.data || [];
+
+      const grouped = {};
+      planList.forEach((plan) => {
+        if (!grouped[plan.machineNo]) grouped[plan.machineNo] = [];
+        grouped[plan.machineNo].push(plan);
       });
+
+      setPlans(grouped);
+    } catch (err) {
+      console.error("loadMachinesAndPlans:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ---------------------------
-  // FETCH CHECKLISTS (ASYNC/AWAIT)
-  // ---------------------------
-  const fetchCheckLists = async () => {
-    console.log("Role Id: ", roleId);
-    if (!roleId) return;
+  // checklist (for names)
+  const fetchChecklist = async () => {
     try {
       const res = await getCheckPoint();
-
-      if (res?.statusCode === 200) {
-        setChecklists(res.data);
-      }
+      // earlier you returned array under res.data — adapt accordingly
+      const list = res?.data || res || [];
+      setChecklist(list);
     } catch (err) {
-      console.error("Error fetching checklists:", err);
-      setSnackbar({
-        open: true,
-        message: "Failed to load checklists",
-        severity: "error",
-      });
+      console.error("Checklist fetch error:", err);
     }
   };
 
-  // ---------------------------
-  // FETCH CALENDAR EVENTS (ASYNC/AWAIT)
-  // ---------------------------
-  const fetchCalendarEvents = async (start, end) => {
-    if (!start || !end) return;
+  // returns icon + small text for cell
+  const renderCellContent = (plan) => {
+    if (!plan) return <div>-</div>;
 
-    setLoadingCalendar(true);
-
-    try {
-      const res = await apiCalenderEvent(start, end);
-      const items = res?.data?.data || [];
-
-      const mapped = items.map((item) => {
-        const machine = machineMap[item.machine_no];
-
-        const displayName =
-          (machine &&
-            (machine.displayMachineName || machine.machineName)) ||
-          `Machine ${item.machine_no}`;
-
-        return {
-          id: `occ-${item.occurrence_id}`,
-          title: displayName,
-          start: item.scheduled_for,
-          allDay: true,
-          backgroundColor:
-            item.status === "completed"
-              ? "rgba(0, 200, 0, 0.4)"
-              : "rgba(0, 102, 255, 0.4)",
-          borderColor:
-            item.status === "completed"
-              ? "rgba(0, 150, 0, 0.8)"
-              : "rgba(0, 102, 255, 0.8)",
-          textColor: "#000",
-          extendedProps: {
-            ...item,
-            displayName,
-            line: machine?.lineName || "",
-            plant: machine?.plantName || "",
-            cycle: machine?.cycleTime || "",
-            prod: machine?.lineProductionCount || "",
-            machineDetails: machine || null,
-          },
-        };
-      });
-
-      setCalendarEvents(mapped);
-    } catch (err) {
-      console.error("Error fetching calendar:", err);
-      setSnackbar({
-        open: true,
-        message: "Failed to fetch calendar events",
-        severity: "error",
-      });
-    } finally {
-      setLoadingCalendar(false);
-    }
-  };
-
-  // ---------------------------
-  // ADD OCCURRENCES (ASYNC/AWAIT)
-  // ---------------------------
-  const handleAddOccurrence = async () => {
-    if (!selectedMachine)
-      return setSnackbar({
-        open: true,
-        message: "Please select a machine",
-        severity: "warning",
-      });
-
-    if (!startDate || !endDate)
-      return setSnackbar({
-        open: true,
-        message: "Please select start & end dates",
-        severity: "warning",
-      });
-
-    if (endDate < startDate)
-      return setSnackbar({
-        open: true,
-        message: "End date must be same or after start",
-        severity: "warning",
-      });
-
-    const payload = {
-      planNo: Number(selectedMachine),
-      startDate,
-      endDate,
-      checklistNos: selectedChecklistNos.map(Number),
-    };
-
-    setLoadingAdd(true);
-
-    try {
-      const res = await apiGenerateOccurrences(payload);
-
-      setSnackbar({
-        open: true,
-        message: "Occurrences generated",
-        severity: "success",
-      });
-
-      setOpenAdd(false);
-      setSelectedMachine("");
-      setStartDate("");
-      setEndDate("");
-      setSelectedChecklistNos([]);
-
-      const startToUse = visibleRange.start || startDate;
-      const endToUse = visibleRange.end || endDate;
-
-      await fetchCalendarEvents(startToUse, endToUse);
-    } catch (err) {
-      console.error("Error generating occurrences:", err);
-      setSnackbar({
-        open: true,
-        message:
-          err?.response?.data?.message || "Failed to generate occurrences",
-        severity: "error",
-      });
-    } finally {
-      setLoadingAdd(false);
-    }
-  };
-
-  const handleOpenDetails = async (occId) => {
-    setLoadingDetails(true);
-    setOpenDetails(true);
-
-    try {
-      const res = await apiOccurrenceDetails(occId);
-
-      if (res?.data?.statusCode === 200) {
-        const occ = res.data.data;
-
-        // attach display name
-        const machine = machineMap[occ.machine_no];
-        occ.machineName = machine
-          ? machine.displayMachineName || machine.machineName
-          : `Machine ${occ.machine_no}`;
-
-        setOccDetails(occ);
-
-      }
-    } catch (err) {
-      console.error("Error fetching occurrence details:", err);
-      setSnackbar({
-        open: true,
-        message: "Failed to load occurrence details",
-        severity: "error",
-      });
-    } finally {
-      setLoadingDetails(false);
-    }
-  };
-
-  const handleMarkChecked = async (checkId) => {
-    try {
-      await apiCheckChecklist(checkId);
-      setSnackbar({
-        open: true,
-        message: "Checklist item marked as checked",
-        severity: "success",
-      });
-
-      // Re-fetch occurrence details after marking checked
-      await handleOpenDetails(occDetails.occurrence_id);
-
-    } catch (err) {
-      console.error(err);
-      setSnackbar({
-        open: true,
-        message: "Failed to update checklist status",
-        severity: "error",
-      });
-    }
-  };
-
-  const renderEventTitle = (event) => {
-    const d = event.extendedProps;
+    const isCompleted = plan.status && plan.status.toLowerCase() === "completed";
+    const updatedAt = plan.updatedAt ? fmtDate(plan.updatedAt) : null;
 
     return (
-      <div
-        style={{ fontSize: "11px", padding: "2px", color: "#000" }}
-        title={`Machine: ${d.displayName}\nLine: ${d.line}\nStatus: ${d.status}`}
-      >
-        <b>{d.displayName}</b>
-        <br />
-        {d.status}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+        <div>
+          {isCompleted ? <CheckCircle sx={{ color: "green" }} /> : <RadioButtonUnchecked sx={{ color: "#1976d2" }} />}
+        </div>
+        <div style={{ fontSize: 11, color: "#333" }}>
+          {isCompleted ? `Completed: ${updatedAt}` : "Planned"}
+        </div>
       </div>
     );
   };
 
+  // find plan for machine+date
+  const findPlan = (machineNo, dateStr) => {
+    const row = plans[machineNo] || [];
+    return row.find((p) => p.startDate === dateStr);
+  };
+
+  // open plan details, and preset update form fields
+  const openPlan = async (planNo) => {
+    try {
+      const res = await apiGetPlanDetails(planNo);
+      const data = res?.data?.data || res?.data || null;
+      setSelectedPlan(data);
+
+      // preset update controls
+      const planObj = data?.plan || data || null;
+      setUpdateStatus(planObj?.status || "");
+      // completed checklists from completedCheckpoints array (your plan example has that)
+      const completed = planObj?.completedCheckpoints || [];
+      setUpdateCompletedChecklists(Array.isArray(completed) ? completed.slice() : []);
+      setUpdateRemarks("");
+      setOpenDetails(true);
+    } catch (err) {
+      console.error("openPlan:", err);
+      alert("Failed to load plan details.");
+    }
+  };
+
+  // toggle checklist selection in details update form
+  const toggleChecklist = (checklistNo) => {
+    setUpdateCompletedChecklists((prev) => {
+      if (prev.includes(checklistNo)) return prev.filter((n) => n !== checklistNo);
+      return [...prev, checklistNo];
+    });
+  };
+
+  // send update payload to backend and refresh
+  const handleUpdatePlanStatus = async () => {
+    if (!selectedPlan || !selectedPlan.plan) {
+      alert("No plan selected");
+      return;
+    }
+    const planNo = selectedPlan.plan.planNo;
+    const allChecklistNos = (selectedPlan.checklists || []).map((c) => c.checklistNo);
+    const completed = Array.isArray(updateCompletedChecklists) ? updateCompletedChecklists : [];
+    const incomplete = allChecklistNos.filter((n) => !completed.includes(n));
+
+    const payload = {
+      status: updateStatus || selectedPlan.plan.status,
+      completedChecklists: completed,
+      incompleteChecklists: incomplete,
+      remarks: updateRemarks || "",
+    };
+
+    try {
+      setUpdating(true);
+      await apiUpdatePlanStatus(planNo, payload);
+
+      // refresh table & details
+      await loadMachinesAndPlans();
+      const fresh = await apiGetPlanDetails(planNo);
+      setSelectedPlan(fresh?.data?.data || fresh?.data || null);
+      // keep dialog open — user sees updated status/updatedAt
+    } catch (err) {
+      console.error("handleUpdatePlanStatus:", err);
+      alert("Failed to update plan status");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // create plan for all machines
+  const handleCreatePlan = async () => {
+    if (!addStartDate) {
+      alert("Select start date");
+      return;
+    }
+    if (!addChecklists.length) {
+      alert("Select at least one checklist");
+      return;
+    }
+
+    const payload = {
+      startDate: addStartDate,
+      planName: addPlanName || "Monthly Preventive Plan",
+      planDescription: addPlanDescription || "",
+      checklistNos: addChecklists,
+    };
+
+    try {
+      await apiCreatePlanForAllMachines(payload);
+      alert("Plans created");
+      setOpenAdd(false);
+      // reload table
+      loadMachinesAndPlans();
+    } catch (err) {
+      console.error("handleCreatePlan:", err);
+      alert("Failed to create plans");
+    }
+  };
+
   return (
-    <div style={{ padding: "0px 20px", position: "relative" }}>
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          background:
-            "linear-gradient(to right, rgb(0, 93, 114), rgb(79, 223, 255))",
-          padding: "8px",
-          borderRadius: "8px",
-          marginBottom: "10px",
-          marginTop: "10px",
-          color: "white",
-          justifyContent: "space-between",
-        }}
-      >
+    <Box sx={{ padding: "20px" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-          Maintenance Calendar
+          Maintenance Plan Table View
         </Typography>
 
-        <Fab size="small" color="primary" onClick={() => setOpenAdd(true)}>
-          <AddIcon />
-        </Fab>
-      </div>
+        <Button startIcon={<AddCircle />} variant="contained" onClick={() => setOpenAdd(true)}>
+          Add New
+        </Button>
+      </Box>
 
-      {loadingCalendar && (
-        <Box
-          sx={{
-            position: "absolute",
-            left: "50%",
-            top: "30%",
-            transform: "translate(-50%, -30%)",
-            zIndex: 50,
-          }}
-        >
+      {/* Month / Year */}
+      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+        <FormControl>
+          <InputLabel>Month</InputLabel>
+          <Select value={selectedMonth} label="Month" onChange={(e) => setSelectedMonth(e.target.value)} sx={{ minWidth: 140 }}>
+            {[
+              "January",
+              "February",
+              "March",
+              "April",
+              "May",
+              "June",
+              "July",
+              "August",
+              "September",
+              "October",
+              "November",
+              "December",
+            ].map((m, i) => (
+              <MenuItem key={i} value={i + 1}>
+                {m}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl>
+          <InputLabel>Year</InputLabel>
+          <Select value={selectedYear} label="Year" onChange={(e) => setSelectedYear(e.target.value)} sx={{ minWidth: 120 }}>
+            {[2024, 2025, 2026, 2027, 2028].map((y) => (
+              <MenuItem key={y} value={y}>
+                {y}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+      {/* Table */}
+      {loading ? (
+        <Box sx={{ textAlign: "center", p: 3 }}>
           <CircularProgress />
+        </Box>
+      ) : (
+        <Box sx={{ overflowX: "auto", border: "1px solid #ccc", borderRadius: 2 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ background: "#003d4d", color: "white" }}>
+                <th style={{ padding: 8, border: "1px solid #ccc", minWidth: 160 }}>Machine</th>
+                {dates.map((d) => (
+                  <th key={d.toISOString()} style={{ padding: 6, border: "1px solid #ccc", whiteSpace: "nowrap" }}>
+                    {d.getDate()}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {machines.map((m) => {
+                const rowPlans = plans[m.machineNo] || [];
+                return (
+                  <tr key={m.machineNo}>
+                    <td style={{ padding: 8, border: "1px solid #ccc", background: "#eef9ff", fontWeight: "bold" }}>
+                      {m.displayMachineName || m.machineName}
+                    </td>
+
+                    {dates.map((d) => {
+                      const dateStr = d.toISOString().split("T")[0];
+                      const found = findPlan(m.machineNo, dateStr);
+
+                      return (
+                        <td
+                          key={dateStr}
+                          style={{
+                            padding: 8,
+                            border: "1px solid #ccc",
+                            textAlign: "center",
+                            cursor: found ? "pointer" : "default",
+                            background: found
+                              ? found.status && found.status.toLowerCase() === "completed"
+                                ? "#c6ffd1"
+                                : "#dcecff"
+                              : "white",
+                            minWidth: 90,
+                          }}
+                          onClick={() => found && openPlan(found.planNo)}
+                        >
+                          {found ? renderCellContent(found) : "-"}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </Box>
       )}
 
-      {/* CALENDAR */}
-      <FullCalendar
-        plugins={[dayGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
-        events={calendarEvents}
-        height="80vh"
-        datesSet={(info) => {
-          const start = cleanDate(info.startStr);
-          const end = cleanDate(info.endStr);
+      {/* Details Dialog (Plan details + update) */}
+      <Dialog open={openDetails} onClose={() => setOpenDetails(false)} fullWidth maxWidth="md">
+        <DialogTitle>
+          <Info sx={{ verticalAlign: "middle", mr: 1 }} /> Plan Details & Update
+        </DialogTitle>
 
-          setVisibleRange({ start, end });
-          fetchCalendarEvents(start, end);
-        }}
-        eventClick={async (info) => {
-          const occId = info.event.extendedProps.occurrence_id;
-          await handleOpenDetails(occId);
-        }}
-        eventContent={(info) => renderEventTitle(info.event)}
-      />
+        <DialogContent dividers>
+          {!selectedPlan ? (
+            <Typography>No Data</Typography>
+          ) : (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {/* Basic info */}
+              <Box sx={{ p: 2, border: "1px solid #ddd", borderRadius: 1, background: "#f4fbff" }}>
+                <Typography sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: "bold", mb: 1 }}>
+                  <Assignment /> Basic Info
+                </Typography>
 
-      {/* ADD OCCURRENCE DIALOG */}
-      <Dialog open={openAdd} onClose={() => setOpenAdd(false)} fullWidth>
-        <DialogTitle>Add Maintenance Occurrence</DialogTitle>
+                <Typography>
+                  <b>Machine:</b>{" "}
+                  {machineMap[selectedPlan.plan.machineNo]
+                    ? machineMap[selectedPlan.plan.machineNo].displayMachineName
+                    : selectedPlan.plan.machineNo}
+                </Typography>
 
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {/* MACHINE */}
-          <FormControl fullWidth>
-            <InputLabel>Machine</InputLabel>
-            <Select
-              value={selectedMachine}
-              label="Machine"
-              onChange={(e) => setSelectedMachine(e.target.value)}
-            >
-              <MenuItem value="">
-                <em>Select machine</em>
-              </MenuItem>
-              {machines.map((m) => (
-                <MenuItem key={m.machineNo} value={m.machineNo}>
-                  {m.displayMachineName || m.machineName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+                <Typography>
+                  <b>Plan Name:</b> {selectedPlan.plan.planName}
+                </Typography>
 
-          {/* DATES */}
-          <TextField
-            label="Start Date"
-            type="date"
-            value={startDate}
-            InputLabelProps={{ shrink: true }}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
+                <Typography>
+                  <b>Description:</b> {selectedPlan.plan.planDescription}
+                </Typography>
 
-          <TextField
-            label="End Date"
-            type="date"
-            value={endDate}
-            InputLabelProps={{ shrink: true }}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
+                <Typography>
+                  <CalendarMonth sx={{ verticalAlign: "middle", mr: 0.5 }} /> <b>Scheduled:</b>{" "}
+                  {selectedPlan.plan.startDate}
+                </Typography>
 
-          {/* CHECKLISTS */}
-          <FormControl fullWidth>
-            <InputLabel>Checklist (optional)</InputLabel>
-            <Select
-              multiple
-              value={selectedChecklistNos}
-              onChange={(e) => setSelectedChecklistNos(e.target.value)}
-              input={<OutlinedInput label="Checklist (optional)" />}
-              renderValue={(selected) =>
-                selected
-                  .map((id) => {
-                    const cl = checklists.find((c) => c.checklistNo === id);
-                    return cl ? cl.checklistName : id;
-                  })
-                  .join(", ")
-              }
+                <Typography>
+                  <b>Current status:</b> {selectedPlan.plan.status}
+                </Typography>
 
-            >
-              {checklists.map((cl) => (
-                <MenuItem key={cl.checklistNo} value={cl.checklistNo}>
-                  <Checkbox
-                    checked={selectedChecklistNos.includes(cl.checklistNo)}
-                  />
-                  <ListItemText
-                    primary={cl.checklistName}
-                    secondary={cl.checklistDescription}
-                  />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={() => setOpenAdd(false)} disabled={loadingAdd}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleAddOccurrence}
-            disabled={loadingAdd}
-          >
-            {loadingAdd ? <CircularProgress size={20} /> : "Save"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={openDetails} onClose={() => setOpenDetails(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Maintenance Occurrence Details</DialogTitle>
-
-        <DialogContent>
-          {loadingDetails ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : occDetails ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <Typography><b>Machine:</b> {occDetails.machineName}</Typography>
-              <Typography>
-                <b>Scheduled For:</b> {occDetails.scheduled_for?.split("T")[0]}
-              </Typography>
-              <Typography><b>Status:</b> {occDetails.status.toUpperCase()}</Typography>
-
-              <Typography sx={{ mt: 2, mb: 1, fontWeight: "bold" }}>
-                Checklist:
-              </Typography>
-
-              <Box sx={{ mt: 1 }}>
-                {occDetails.checklist?.length === 0 && (
-                  <Typography>No checklist items.</Typography>
+                {selectedPlan.plan.updatedAt && selectedPlan.plan.status && selectedPlan.plan.status.toLowerCase() === "completed" && (
+                  <Typography>
+                    <b>Completed at:</b> {fmtDate(selectedPlan.plan.updatedAt)}
+                  </Typography>
                 )}
-
-                {occDetails.checklist?.map((cl) => (
-                  <Box
-                    key={cl.id}
-                    sx={{
-                      padding: "10px",
-                      border: "1px solid #ccc",
-                      borderRadius: "6px",
-                      mb: 1,
-                      background: cl.checked ? "#d6ffd6" : "#ffe0e0",
-                      position: "relative",
-                    }}
-                  >
-                    {/* CHECK BUTTON - TOP RIGHT */}
-                    {roleId === "5" && !cl.checked && (
-                      <IconButton
-                        size="small"
-                        onClick={() => handleMarkChecked(cl.id)}
-                        sx={{
-                          position: "absolute",
-                          bottom: 5,
-                          right: 5,
-                          color: "grey",
-                        }}
-                      >
-                        <CheckCircleIcon />
-                      </IconButton>
-                    )}
-
-                    <Typography>
-                      <b>Check Point Name:</b> {cl.point_name}
-                    </Typography>
-
-                    <Typography>
-                      <b>Checked:</b> {cl.checked ? "Yes" : "No"}
-                    </Typography>
-                  </Box>
-                ))}
-
               </Box>
 
-            </div>
-          ) : (
-            <Typography>No details found.</Typography>
+              {/* Update UI */}
+              <Box sx={{ p: 2, border: "1px solid #eee", borderRadius: 1 }}>
+                <Typography sx={{ fontWeight: "bold", mb: 1 }}>Update Plan Status & Checklists</Typography>
+
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2 }}>
+                  <FormControl sx={{ minWidth: 200 }}>
+                    <InputLabel>Status</InputLabel>
+                    <Select value={updateStatus} label="Status" onChange={(e) => setUpdateStatus(e.target.value)}>
+                      <MenuItem value="Scheduled">Scheduled</MenuItem>
+                      <MenuItem value="InProgress">In Progress</MenuItem>
+                      <MenuItem value="Completed">Completed</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  <TextField label="Remarks" value={updateRemarks} onChange={(e) => setUpdateRemarks(e.target.value)} fullWidth />
+                </Stack>
+
+                {/* Checklists (not mainpoints). list each checklist with a checkbox indicating completion */}
+                <Box>
+                  <Typography sx={{ mb: 1, fontWeight: "bold" }}>Checklists</Typography>
+
+                  {(selectedPlan.checklists || []).length === 0 ? (
+                    <Typography>No checklists for this plan.</Typography>
+                  ) : (
+                    (selectedPlan.checklists || []).map((cl) => {
+                      const checklistNo = cl.checklistNo;
+                      const item = checklist.find((c) => c.checklistNo === checklistNo);
+                      const label = item ? item.checklistName : `Checklist ${checklistNo}`;
+                      const checked = updateCompletedChecklists.includes(checklistNo);
+
+                      return (
+                        <FormControlLabel
+                          key={checklistNo}
+                          control={<Checkbox checked={checked} onChange={() => toggleChecklist(checklistNo)} />}
+                          label={`${label} (${checklistNo})`}
+                        />
+                      );
+                    })
+                  )}
+                </Box>
+
+                {/* Show checkpoints grouped by checklist for extra clarity */}
+                <Box sx={{ mt: 2 }}>
+                  <Typography sx={{ fontWeight: "bold", mb: 1 }}>Checkpoints</Typography>
+                  {(selectedPlan.checkpoints || []).length === 0 ? (
+                    <Typography>No checkpoint items</Typography>
+                  ) : (
+                    (selectedPlan.checklists || []).map((cl) => {
+                      const clNo = cl.checklistNo;
+                      const points = (selectedPlan.checkpoints || []).filter((cp) => cp.checklistNo === clNo);
+                      if (!points.length) return null;
+                      return (
+                        <Box key={`cp-${clNo}`} sx={{ mb: 1, p: 1, border: "1px solid #eee", borderRadius: 1 }}>
+                          <Typography sx={{ fontWeight: "bold" }}>
+                            {checklist.find((c) => c.checklistNo === clNo)?.checklistName || `Checklist ${clNo}`}
+                          </Typography>
+                          {points.map((pt) => (
+                            <Box key={pt.id} sx={{ display: "flex", justifyContent: "space-between", mt: 0.5 }}>
+                              <Typography>
+                                Mainpoint #{pt.mainpointNo}
+                                {pt.remarks ? ` — ${pt.remarks}` : ""}
+                              </Typography>
+                              {pt.isCompleted ? <CheckCircle sx={{ color: "green" }} /> : <RadioButtonUnchecked sx={{ color: "red" }} />}
+                            </Box>
+                          ))}
+                        </Box>
+                      );
+                    })
+                  )}
+                </Box>
+              </Box>
+            </Box>
           )}
         </DialogContent>
 
         <DialogActions>
           <Button onClick={() => setOpenDetails(false)}>Close</Button>
+          <Button
+            variant="contained"
+            onClick={handleUpdatePlanStatus}
+            disabled={updating || !selectedPlan}
+          >
+            {updating ? <CircularProgress size={18} /> : "Update"}
+          </Button>
         </DialogActions>
       </Dialog>
 
-      {/* SNACKBAR */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert
-          severity={snackbar.severity}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </div>
+      {/* Add Plan Modal */}
+      <Dialog open={openAdd} onClose={() => setOpenAdd(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Create Plan For All Machines</DialogTitle>
+
+        <DialogContent dividers sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <TextField
+            type="date"
+            label="Start Date"
+            InputLabelProps={{ shrink: true }}
+            value={addStartDate}
+            onChange={(e) => setAddStartDate(e.target.value)}
+          />
+
+          <TextField label="Plan Name" value={addPlanName} onChange={(e) => setAddPlanName(e.target.value)} />
+          <TextField label="Plan Description" multiline minRows={2} value={addPlanDescription} onChange={(e) => setAddPlanDescription(e.target.value)} />
+
+          <FormControl fullWidth>
+            <InputLabel>Checklists</InputLabel>
+            <Select
+              multiple
+              value={addChecklists}
+              onChange={(e) => setAddChecklists(e.target.value)}
+              renderValue={(selected) =>
+                selected
+                  .map((id) => checklist.find((c) => c.checklistNo === id)?.checklistName || `Checklist ${id}`)
+                  .join(", ")
+              }
+            >
+              {checklist.map((cl) => (
+                <MenuItem key={cl.checklistNo} value={cl.checklistNo}>
+                  <Checkbox checked={addChecklists.includes(cl.checklistNo)} />
+                  <ListItemText primary={cl.checklistName} secondary={cl.checklistDescription} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setOpenAdd(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleCreatePlan}>Create Plans</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }
