@@ -136,8 +136,8 @@ export default function PendingComplaintsPage() {
     if (!found) return userId; // fallback to ID if not found
     return `${found.firstName} ${found.lastName || ""}`.trim();
   };
-  
-    const getStatusName = (statusId) => {
+
+  const getStatusName = (statusId) => {
     const found = status.find((s) => s.statusId === statusId);
     return found ? found.statusName : statusId; // fallback to ID if not found
   };
@@ -291,6 +291,7 @@ export default function PendingComplaintsPage() {
                           e.target.value
                         )
                       }
+                      disabled={row.currentStatus === 2}
                     >
                       {status
                         .filter((s) => s.statusId === 2 || s.statusId === 3)
@@ -317,15 +318,18 @@ export default function PendingComplaintsPage() {
                           e.target.value
                         )
                       }
+                      disabled={row.currentStatus === 2}
                     />
                   </StyledTableCell>
 
                   <StyledTableCell>
                     <IconButton
                       size="small"
+                      color="primary"
                       onClick={() => handleVerifyComplaint(row.complaintNo)}
+                      disabled={row.currentStatus === 2}
                     >
-                      <SaveIcon color="success" />
+                      <SaveIcon />
                     </IconButton>
                   </StyledTableCell>
                   <StyledTableCell>

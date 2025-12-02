@@ -123,7 +123,7 @@ export default function AssginWorkOrderPage() {
       console.error("Error fetching Work Orders:", error);
       setSnackbar({
         open: true,
-        message: "Error fetching work orders.",
+        message: error.response.data.message || "Something went wrong.",
         severity: "error",
       });
     }

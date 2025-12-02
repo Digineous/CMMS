@@ -70,10 +70,10 @@ export default function MainPointPage() {
         throw new Error("Invalid response");
       }
     } catch (error) {
-      console.error("Error Fetching Main Points:", error);
+      console.error("Error fetching Work Orders:", error);
       setSnackbar({
         open: true,
-        message: "Error fetching main points.",
+        message: error.response.data.message || "Something went wrong.",
         severity: "error",
       });
     }
